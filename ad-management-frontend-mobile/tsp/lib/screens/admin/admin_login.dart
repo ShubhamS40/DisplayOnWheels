@@ -32,7 +32,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
               children: [
                 // Illustration Image
                 Image.asset(
-                  "assets/authsvg/admin_login.jpg", // Replace with your asset
+                  "assets/authsvg/admin_login.png", // Replace with your asset
                   height: 400,
                 ),
                 const SizedBox(height: 20),
