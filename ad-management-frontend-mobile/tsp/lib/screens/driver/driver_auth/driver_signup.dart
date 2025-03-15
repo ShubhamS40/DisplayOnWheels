@@ -11,12 +11,15 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
 
   final TextEditingController fullNameController = TextEditingController();
   final TextEditingController emailPhoneController = TextEditingController();
+  final TextEditingController contactNumberController =
+      TextEditingController(); // New Field
   final TextEditingController vehicleNumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
 
   bool isPasswordVisible = false;
+  bool isTermsAccepted = false;
   String? selectedVehicleType;
 
   final List<String> vehicleTypes = ["Hatchback", "SUV", "Sedan", "Other"];
@@ -36,20 +39,17 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 0),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Image.asset(
-                  "assets/authsvg/driver_signup.png",
-                  height: 200,
-                ),
+                Image.asset("assets/authsvg/driver_signup.png", height: 200),
                 const SizedBox(height: 20),
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: containerColor,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(60),
                         topRight: Radius.circular(60)),
                     boxShadow: [
@@ -66,88 +66,102 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          "Driver Sign Up",
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: textColor,
-                          ),
-                        ),
+                        Text("Driver Sign Up",
+                            style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: textColor)),
                         const SizedBox(height: 20),
+                        buildTextField(fullNameController, "Full Name",
+                            "Enter Your Full Name", Icons.person, textColor),
                         buildTextField(
-                          controller: fullNameController,
-                          label: "Full Name",
-                          hint: "Enter Your Full Name",
-                          icon: Icons.person,
-                          textColor: textColor,
-                        ),
+                            emailPhoneController,
+                            "Email / Phone Number",
+                            "Enter Email or Phone",
+                            Icons.email,
+                            textColor),
                         buildTextField(
-                          controller: emailPhoneController,
-                          label: "Email / Phone Number",
-                          hint: "Enter Email or Phone Number",
-                          icon: Icons.email,
-                          textColor: textColor,
-                        ),
+                            contactNumberController,
+                            "Contact Number",
+                            "Enter Your Contact Number",
+                            Icons.phone,
+                            textColor), // Contact Number Field
                         DropdownButtonFormField<String>(
                           decoration: InputDecoration(
                             labelText: "Vehicle Type",
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
+                                borderRadius: BorderRadius.circular(10)),
                           ),
                           value: selectedVehicleType,
                           items: vehicleTypes.map((type) {
                             return DropdownMenuItem(
-                              value: type,
-                              child: Text(type,
-                                  style: TextStyle(color: textColor)),
-                            );
+                                value: type,
+                                child: Text(type,
+                                    style: TextStyle(color: textColor)));
                           }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              selectedVehicleType = value;
-                            });
-                          },
+                          onChanged: (value) =>
+                              setState(() => selectedVehicleType = value),
                           validator: (value) =>
                               value == null ? "Select a vehicle type" : null,
                         ),
                         const SizedBox(height: 12),
                         buildTextField(
-                          controller: vehicleNumberController,
-                          label: "Vehicle Number",
-                          hint: "Enter Your Vehicle Number",
-                          icon: Icons.directions_car,
-                          textColor: textColor,
-                        ),
+                            vehicleNumberController,
+                            "Vehicle Number",
+                            "Enter Your Vehicle Number",
+                            Icons.directions_car,
+                            textColor),
                         buildPasswordField(
                             passwordController, "Password", textColor),
                         buildPasswordField(confirmPasswordController,
                             "Confirm Password", textColor),
+
+                        // Terms & Conditions Checkbox
+                        Row(
+                          children: [
+                            Checkbox(
+                              value: isTermsAccepted,
+                              onChanged: (value) =>
+                                  setState(() => isTermsAccepted = value!),
+                            ),
+                            GestureDetector(
+                              onTap: () => showTermsDialog(context),
+                              child: Text("I accept the Terms & Conditions",
+                                  style: TextStyle(
+                                      color: Colors.orange,
+                                      decoration: TextDecoration.underline)),
+                            ),
+                          ],
+                        ),
+
                         const SizedBox(height: 20),
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
+                                if (!isTermsAccepted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            "Please accept Terms & Conditions")),
+                                  );
+                                  return;
+                                }
                                 // Sign-Up Logic
                               }
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: buttonColor,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
+                                  borderRadius: BorderRadius.circular(10)),
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
-                            child: const Text(
-                              "Sign Up",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            child: const Text("Sign Up",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold)),
                           ),
                         ),
                         const SizedBox(height: 15),
@@ -157,13 +171,11 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
                             Text("Already have an account?",
                                 style: TextStyle(color: textColor)),
                             TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            DriverLoginScreen()));
-                              },
+                              onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          DriverLoginScreen())),
                               child: const Text("Login",
                                   style: TextStyle(color: Colors.orange)),
                             ),
@@ -181,13 +193,8 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
     );
   }
 
-  Widget buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-    required Color textColor,
-  }) {
+  Widget buildTextField(TextEditingController controller, String label,
+      String hint, IconData icon, Color textColor) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextFormField(
@@ -228,6 +235,37 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
         validator: (value) =>
             value == null || value.isEmpty ? "Enter a password" : null,
       ),
+    );
+  }
+
+  void showTermsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Terms & Conditions"),
+          content: SingleChildScrollView(
+            child: Text(
+              "1. You must follow traffic laws and drive responsibly.\n"
+              "2. You are responsible for any damage caused by your vehicle.\n"
+              "3. The company is not liable for any accidents or injuries.\n"
+              "4. Payments will be made as per company policies.\n"
+              "5. You must provide accurate and up-to-date information.\n"
+              "6. Your account may be suspended for policy violations.\n"
+              "7. The company reserves the right to modify these terms.\n"
+              "8. Unauthorized use of company assets is strictly prohibited.\n"
+              "9. Drivers must maintain a professional attitude at all times.\n"
+              "10. Privacy policies must be adhered to at all times.",
+              textAlign: TextAlign.justify,
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("OK"))
+          ],
+        );
+      },
     );
   }
 }
