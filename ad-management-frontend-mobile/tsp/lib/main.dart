@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tsp/screens/auth/login_screen.dart';
+import 'package:tsp/screens/auth/role_selection.dart';
 import 'package:tsp/screens/auth/signup_screen.dart';
 
 void main() {
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData.light(), // Light Theme
       darkTheme: ThemeData.dark(), // Dark Theme
       themeMode: ThemeMode.system, // This will follow system theme
-      home: const SignupScreen(),
+      home: RoleSelectionScreen(),
     );
   }
 }
