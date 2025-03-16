@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Driver Model
+model Driver {
+  id                 String                       @id @default(uuid())
+  fullName           String
+  email              String                       @unique
+  password           String
+  phoneNumber        String                       @unique
+  vehicle            DriverVehicle?
+  documents          DriverDocumentVerification[]
+  termsAndConditions DriverTermsAndConditions?
+  createdAt          DateTime                     @default(now())
+  updatedAt          DateTime                     @updatedAt
+}
+
+// Driver Vehicle Model
+model DriverVehicle {
+  id            String   @id @default(uuid())
+  driverId      String   @unique
+  driver        Driver   @relation(fields: [driverId], references: [id])
+  vehicleType   String
+  vehicleNumber String   @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Driver Document Verification Model
+model DriverDocumentVerification {
+  id               String               @id @default(uuid())
+  driverId         String
+  driver           Driver               @relation(fields: [driverId], references: [id])
+  license          String? // URL of the uploaded document
+  licenseStatus    DriverApprovalStatus @default(PENDING)
+  photo            String? // URL of the uploaded photo
+  photoStatus      DriverApprovalStatus @default(PENDING)
+  vehicleReg       String? // URL of the uploaded registration document
+  vehicleRegStatus DriverApprovalStatus @default(PENDING)
+  idProof          String? // URL of the uploaded ID proof
+  idProofStatus    DriverApprovalStatus @default(PENDING)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+}
+
+// Driver Approval Status Enum
+enum DriverApprovalStatus {
+  APPROVED
+  PENDING
+  REJECTED
+}
+
+// Driver OTP Verification Model
+model DriverOTPVerification {
+  id          String   @id @default(uuid())
+  phoneNumber String   @unique
+  otpCode     String
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+}
+
+// Driver Terms and Conditions Model
+model DriverTermsAndConditions {
+  id        String   @id @default(uuid())
+  driverId  String   @unique
+  driver    Driver   @relation(fields: [driverId], references: [id])
+  accepted  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
