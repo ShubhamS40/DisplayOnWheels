@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:tsp/screens/auth/login_screen.dart';
 import 'package:tsp/screens/auth/role_selection.dart';
 import 'package:tsp/screens/auth/signup_screen.dart';
+import 'package:tsp/services/bluetooth_service.dart';
+import 'package:tsp/services/scan_screen.dart';
 
 void main() {
   runApp(const MyApp());
