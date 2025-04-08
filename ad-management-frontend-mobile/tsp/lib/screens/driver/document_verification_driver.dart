@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
+import 'package:tsp/screens/driver/document_status_screen.dart';
+import 'package:tsp/screens/driver/driver_dashboard.dart';
 
 class DriverVerificationScreen extends StatefulWidget {
   @override
@@ -198,12 +200,20 @@ class _DriverVerificationScreenState extends State<DriverVerificationScreen> {
             const Spacer(),
 
             // Continue Button
+            // Continue Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: uploadProgress == 1.0
-                    ? () {}
-                    : null, // Enable only if all docs are uploaded
+                    ? () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DocumentStatusScreen(),
+                          ),
+                        );
+                      }
+                    : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
                   disabledBackgroundColor:
@@ -223,6 +233,7 @@ class _DriverVerificationScreenState extends State<DriverVerificationScreen> {
                 ),
               ),
             ),
+
             const SizedBox(height: 20),
           ],
         ),
