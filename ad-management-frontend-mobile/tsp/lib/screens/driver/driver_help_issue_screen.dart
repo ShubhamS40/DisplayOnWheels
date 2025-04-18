@@ -36,7 +36,7 @@ class _DriverHelpIssueScreenState extends State<DriverHelpIssueScreen>
   }
 
   // Orange color for the theme
-  static const Color primaryOrange = Color(0xFFFF6B00);
+  static const Color primaryOrange = Color(0xFFE89C08);
   static const Color textColor = Color(0xFF2C3E50);
 
   @override

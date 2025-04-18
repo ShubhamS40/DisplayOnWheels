@@ -24,7 +24,7 @@ class _DriverUploadAdvertisementProofState
   int _currentStep = 0;
 
   // Colors
-  static const Color primaryOrange = Color(0xFFFF6B00);
+  static const Color primaryOrange = Color(0xFFE89C08);
   static const Color textColor = Color(0xFF2C3E50);
   static const Color backgroundColor = Color(0xFFF8F9FA);
 

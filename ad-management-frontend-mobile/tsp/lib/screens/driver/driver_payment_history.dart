@@ -132,14 +132,14 @@ class _DriverPaymentHistoryState extends State<DriverPaymentHistory> {
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
           colors: [
-            const Color(0xFFFF6B00),
+            const Color(0xFFE89C08),
             const Color(0xFFFF9800),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF6B00).withOpacity(0.3),
+            color: const Color(0xFFE89C08).withOpacity(0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -522,7 +522,7 @@ class _DriverPaymentHistoryState extends State<DriverPaymentHistory> {
                     icon: const Icon(Icons.download),
                     label: const Text('Download Receipt'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF6B00),
+                      backgroundColor: const Color(0xFFE89C08),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),

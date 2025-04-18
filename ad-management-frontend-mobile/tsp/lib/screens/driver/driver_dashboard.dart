@@ -34,7 +34,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
               expandedHeight: 180.0,
               floating: false,
               pinned: true,
-              backgroundColor: const Color(0xFFFF6B00),
+              backgroundColor: const Color(0xFFE89C08),
               flexibleSpace: FlexibleSpaceBar(
                 background: Container(
                   decoration: BoxDecoration(
@@ -42,7 +42,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
                       begin: Alignment.topRight,
                       end: Alignment.bottomLeft,
                       colors: [
-                        const Color(0xFFFF6B00),
+                        const Color(0xFFE89C08),
                         const Color(0xFFFF9800),
                       ],
                     ),
@@ -79,7 +79,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
                                   child: Icon(
                                     Icons.person,
                                     size: 30,
-                                    color: const Color(0xFFFF6B00),
+                                    color: const Color(0xFFE89C08),
                                   ),
                                 ),
                                 const SizedBox(width: 16),
@@ -295,7 +295,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFF6B00).withOpacity(0.1),
+                              color: const Color(0xFFE89C08).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -364,7 +364,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
                           // View campaign details
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFF6B00),
+                          backgroundColor: const Color(0xFFE89C08),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -642,7 +642,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(Icons.location_on,
-                              color: Color(0xFFFF6B00)),
+                              color: Color(0xFFE89C08)),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -680,7 +680,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
                             icon: Icon(Icons.directions),
                             label: Text('Get Directions'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFFF6B00),
+                              backgroundColor: const Color(0xFFE89C08),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -877,7 +877,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF6B00).withOpacity(0.3),
+            color: const Color(0xFFE89C08).withOpacity(0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -964,7 +964,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFFFF6B00),
+                foregroundColor: const Color(0xFFE89C08),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
