@@ -19,11 +19,35 @@ model DriverRegistration {
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
 
-  // 🔐 Password reset fields
   passwordResetToken   String?            
-  passwordResetExpires DateTime?         
+  passwordResetExpires DateTime? 
+
+  otp                  String?            // 🔐 OTP for email verification
+  otpExpires           DateTime?          // 🕒 Expiration time for OTP
+  isEmailVerified      Boolean            @default(false)
+
+  // 📄 Relation to documents
+  documents            DriverDocuments?
 }
 
+model DriverDocuments {
+  id                String   @id @default(uuid())
+  driverId          String   @unique
+  photoUrl          String
+  idCardUrl         String
+  drivingLicenseUrl String
+  vehicleImageUrl   String
+  bankProofUrl      String
+  branchName        String
+  bankName          String
+  ifscCode          String
+  accountNumber     String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // 🔗 Foreign key relation
+  driver            DriverRegistration @relation(fields: [driverId], references: [id], onDelete: Cascade)
+}
 
 enum DriverVehicleType {
   Hatchback
@@ -40,4 +64,3 @@ enum DriverVehicleType {
   Wagon
   Other
 }
-

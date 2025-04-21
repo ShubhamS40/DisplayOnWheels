@@ -4,9 +4,15 @@ const { registerDriver } = require('../../controllers/DriverAuthentication/drive
 const { driverLogin } = require('../../controllers/DriverAuthentication/driverLogin.controller');
 const { forgotPasswordDriver } = require('../../controllers/DriverAuthentication/driverForgotPassword.controller');
 const { resetPassword } = require('../../controllers/DriverAuthentication/driverResetPassword.controller');
+const { verifyEmail,resendOtp } = require('../../controllers/DriverAuthentication/driverEmailVerification.controller');
 
 // POST /api/driver/register
 router.post('/register', registerDriver);
+
+// POST /api/driver/verify-email
+router.post('/verify-email', verifyEmail);
+// POST /api/driver/resend-otp
+router.post('/resend-otp', resendOtp);
 
 // POST /api/driver/login
 router.post('/login', driverLogin);

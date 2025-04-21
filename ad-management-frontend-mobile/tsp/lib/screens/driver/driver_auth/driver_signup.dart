@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:tsp/screens/driver/driver_auth/driver_login.dart';
 import 'dart:async';
+import 'driver_login.dart';
+import 'driver_otp_verification.dart'; // ✅ Import OTP screen
 
 class DriverSignUpScreen extends StatefulWidget {
   @override
@@ -24,9 +25,23 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
   bool isTermsAccepted = false;
   String? selectedVehicleType;
   bool _isLoading = false;
-  String? _errorMessage;
-  bool _signupSuccess = false;
-  
+
+  final List<String> vehicleTypes = [
+    "Hatchback",
+    "SUV",
+    "Sedan",
+    "Compact",
+    "Convertible",
+    "Coupe",
+    "Crossover",
+    "Minivan",
+    "Autorickshaw",
+    "Pickup Truck",
+    "Van",
+    "Wagon",
+    "Other"
+  ];
+
   @override
   void dispose() {
     fullNameController.dispose();
@@ -37,8 +52,6 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
     confirmPasswordController.dispose();
     super.dispose();
   }
-
-  final List<String> vehicleTypes = ["Hatchback", "SUV", "Sedan", "Compact", "Convertible", "Coupe", "Crossover", "Minivan","Autorickshaw", "Pickup Truck", "Van", "Wagon", "Other"];
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +70,6 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Image.asset("assets/authsvg/driver_signup.png", height: 200),
                 const SizedBox(height: 20),
@@ -81,14 +93,12 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
                   child: Form(
                     key: _formKey,
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text("Driver Sign Up",
                             style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: textColor,
-                            )),
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: textColor)),
                         const SizedBox(height: 20),
                         buildTextField(fullNameController, "Full Name",
                             "Enter Your Full Name", Icons.person, textColor),
@@ -101,24 +111,22 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
                         buildTextField(
                             contactNumberController,
                             "Contact Number",
-                            "Enter Your Contact Number",
+                            "Enter Contact Number",
                             Icons.phone,
                             textColor),
                         DropdownButtonFormField<String>(
                           decoration: InputDecoration(
                             labelText: "Vehicle Type",
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
+                                borderRadius: BorderRadius.circular(10)),
                           ),
                           value: selectedVehicleType,
-                          items: vehicleTypes.map((type) {
-                            return DropdownMenuItem(
-                              value: type,
-                              child: Text(type,
-                                  style: TextStyle(color: textColor)),
-                            );
-                          }).toList(),
+                          items: vehicleTypes
+                              .map((type) => DropdownMenuItem(
+                                  value: type,
+                                  child: Text(type,
+                                      style: TextStyle(color: textColor))))
+                              .toList(),
                           onChanged: (value) =>
                               setState(() => selectedVehicleType = value),
                           validator: (value) =>
@@ -128,7 +136,7 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
                         buildTextField(
                             vehicleNumberController,
                             "Vehicle Number",
-                            "Enter Your Vehicle Number",
+                            "Enter Vehicle Number",
                             Icons.directions_car,
                             textColor),
                         buildPasswordField(
@@ -138,17 +146,16 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
                         Row(
                           children: [
                             Checkbox(
-                              value: isTermsAccepted,
-                              onChanged: (value) =>
-                                  setState(() => isTermsAccepted = value!),
-                            ),
+                                value: isTermsAccepted,
+                                onChanged: (value) =>
+                                    setState(() => isTermsAccepted = value!)),
                             GestureDetector(
                               onTap: () => showTermsDialog(context),
-                              child: Text("I accept the Terms & Conditions",
+                              child: const Text(
+                                  "I accept the Terms & Conditions",
                                   style: TextStyle(
-                                    color: Colors.orange,
-                                    decoration: TextDecoration.underline,
-                                  )),
+                                      color: Colors.orange,
+                                      decoration: TextDecoration.underline)),
                             ),
                           ],
                         ),
@@ -156,84 +163,7 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                              onPressed: _isLoading 
-                                ? null 
-                                : () async {
-                                  if (_formKey.currentState!.validate()) {
-                                    if (!isTermsAccepted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                            content: Text(
-                                                "Please accept Terms & Conditions")),
-                                      );
-                                      return;
-                                    }
-
-                                    // Execute sign-up with loading state
-                                    setState(() {
-                                      _isLoading = true;
-                                      _errorMessage = null;
-                                    });
-                                    
-                                    // Make the actual API call to register driver
-                                    try {
-                                      final dio = Dio();
-                                      final response = await dio.post(
-                                        'http://localhost:5000/api/driver/register',
-                                        data: {
-                                          'fullName': fullNameController.text.trim(),
-                                          'email': emailPhoneController.text.trim(),
-                                          'contactNumber': contactNumberController.text.trim(),
-                                          'vehicleType': selectedVehicleType,
-                                          'vehicleNumber': vehicleNumberController.text.trim(),
-                                          'password': passwordController.text,
-                                          'confirmPassword': confirmPasswordController.text,
-                                          'acceptedTerms': isTermsAccepted,
-                                        },
-                                      );
-                                      
-                                      // Successfully registered
-                                      if (response.statusCode == 201 || response.statusCode == 200) {
-                                        setState(() {
-                                          _isLoading = false;
-                                          _signupSuccess = true;
-                                        });
-                                        
-                                        // Show success message
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('Registration successful!')),
-                                        );
-                                        
-                                        // After 2 seconds, navigate to login
-                                        Timer(const Duration(seconds: 2), () {
-                                          Navigator.of(context).pushReplacement(
-                                            MaterialPageRoute(builder: (context) => DriverLoginScreen()),
-                                          );
-                                        });
-                                      }
-                                    } catch (error) {
-                                      // Handle errors
-                                      setState(() {
-                                        _isLoading = false;
-                                      });
-                                      
-                                      String errorMessage = 'Registration failed. Please try again.';
-                                      
-                                      if (error is DioException && error.response != null) {
-                                        // Extract error message from API response
-                                        final responseData = error.response?.data;
-                                        if (responseData != null && responseData['error'] != null) {
-                                          errorMessage = responseData['error'];
-                                        }
-                                      }
-                                      
-                                      // Show error message
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text(errorMessage)),
-                                      );
-                                    }
-                                  }
-                                },
+                            onPressed: _isLoading ? null : _handleSignUp,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: buttonColor,
                               shape: RoundedRectangleBorder(
@@ -241,38 +171,13 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
                             child: _isLoading
-                                ? const SizedBox(
-                                    height: 24,
-                                    width: 24,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.5,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                    ),
-                                  )
-                                : _signupSuccess
-                                    ? const Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.check_circle, color: Colors.white),
-                                          SizedBox(width: 8),
-                                          Text(
-                                            "Registration Successful!",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      )
-                                    : const Text(
-                                        "Sign Up",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white)
+                                : const Text("Sign Up",
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white)),
                           ),
                         ),
                         const SizedBox(height: 15),
@@ -285,8 +190,7 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
                               onPressed: () => Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) =>
-                                          DriverLoginScreen())),
+                                      builder: (_) => DriverLoginScreen())),
                               child: const Text("Login",
                                   style: TextStyle(color: Colors.orange)),
                             ),
@@ -304,6 +208,58 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
     );
   }
 
+  Future<void> _handleSignUp() async {
+    if (_formKey.currentState!.validate()) {
+      if (!isTermsAccepted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Please accept Terms & Conditions")));
+        return;
+      }
+
+      setState(() => _isLoading = true);
+
+      try {
+        final dio = Dio();
+        final response = await dio.post(
+          'http://localhost:5000/api/driver/register',
+          data: {
+            'fullName': fullNameController.text.trim(),
+            'email': emailPhoneController.text.trim(),
+            'contactNumber': contactNumberController.text.trim(),
+            'vehicleType': selectedVehicleType,
+            'vehicleNumber': vehicleNumberController.text.trim(),
+            'password': passwordController.text,
+            'confirmPassword': confirmPasswordController.text,
+            'acceptedTerms': isTermsAccepted,
+          },
+        );
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          setState(() => _isLoading = false);
+
+          final emailOrPhone = emailPhoneController.text.trim();
+
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) =>
+                  DriverOtpVerificationScreen(emailOrPhone: emailOrPhone),
+            ),
+          );
+        }
+      } catch (e) {
+        setState(() => _isLoading = false);
+        String errorMsg = "Registration failed. Try again.";
+
+        if (e is DioException && e.response?.data['error'] != null) {
+          errorMsg = e.response!.data['error'];
+        }
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(errorMsg)));
+      }
+    }
+  }
+
   Widget buildTextField(TextEditingController controller, String label,
       String hint, IconData icon, Color textColor) {
     return Padding(
@@ -315,33 +271,14 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
           labelText: label,
           hintText: hint,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.grey.shade400),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.orange, width: 2),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.red.shade400),
-          ),
           prefixIcon: Icon(icon, color: textColor),
-          filled: true,
-          fillColor: Colors.transparent,
         ),
         validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "This field is required";
-          }
-          
-          // Email validation if this is the email field
-          if (label.toLowerCase().contains("email") && 
+          if (value == null || value.isEmpty) return "This field is required";
+          if (label.toLowerCase().contains("email") &&
               !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
             return "Please enter a valid email address";
           }
-          
           return null;
         },
       ),
@@ -350,55 +287,37 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
 
   Widget buildPasswordField(
       TextEditingController controller, String label, Color textColor) {
-    final isConfirmField = label.toLowerCase().contains("confirm");
-    final passwordVisibility = isConfirmField ? isConfirmPasswordVisible : isPasswordVisible;
-    
+    final isConfirm = label.toLowerCase().contains("confirm");
+    final isVisible = isConfirm ? isConfirmPasswordVisible : isPasswordVisible;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextFormField(
         controller: controller,
-        obscureText: !passwordVisibility,
+        obscureText: !isVisible,
         style: TextStyle(color: textColor),
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.grey.shade400),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.orange, width: 2),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.red.shade400),
-          ),
           prefixIcon: Icon(Icons.lock, color: textColor),
           suffixIcon: IconButton(
-            icon: Icon(
-                passwordVisibility ? Icons.visibility : Icons.visibility_off,
+            icon: Icon(isVisible ? Icons.visibility : Icons.visibility_off,
                 color: textColor),
-            onPressed: () => setState(() => isConfirmField 
-                ? isConfirmPasswordVisible = !isConfirmPasswordVisible
-                : isPasswordVisible = !isPasswordVisible),
+            onPressed: () => setState(() {
+              if (isConfirm) {
+                isConfirmPasswordVisible = !isConfirmPasswordVisible;
+              } else {
+                isPasswordVisible = !isPasswordVisible;
+              }
+            }),
           ),
-          filled: true,
-          fillColor: Colors.transparent,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         ),
         validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "Enter a password";
-          }
-          
-          if (!isConfirmField && value.length < 6) {
+          if (value == null || value.isEmpty) return "Enter a password";
+          if (!isConfirm && value.length < 6)
             return "Password must be at least 6 characters";
-          }
-          
-          if (isConfirmField && value != passwordController.text) {
+          if (isConfirm && value != passwordController.text)
             return "Passwords do not match";
-          }
-          
           return null;
         },
       ),
@@ -408,32 +327,20 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
   void showTermsDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Terms & Conditions"),
-          content: SingleChildScrollView(
-            child: Text(
-              "1. You must follow traffic laws and drive responsibly.\n"
-              "2. You are responsible for any damage caused by your vehicle.\n"
-              "3. The company is not liable for any accidents or injuries.\n"
-              "4. Payments will be made as per company policies.\n"
-              "5. You must provide accurate and up-to-date information.\n"
-              "6. Your account may be suspended for policy violations.\n"
-              "7. The company reserves the right to modify these terms.\n"
-              "8. Unauthorized use of company assets is strictly prohibited.\n"
-              "9. Drivers must maintain a professional attitude at all times.\n"
-              "10. Privacy policies must be adhered to at all times.",
-              textAlign: TextAlign.justify,
-            ),
+      builder: (_) => AlertDialog(
+        title: const Text("Terms & Conditions"),
+        content: const SingleChildScrollView(
+          child: Text(
+            "1. Drive responsibly.\n2. Follow traffic laws.\n3. Provide accurate information.\n"
+            "4. Company isn't liable for accidents.\n5. Terms may be updated.",
+            textAlign: TextAlign.justify,
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("OK"),
-            )
-          ],
-        );
-      },
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context), child: const Text("OK"))
+        ],
+      ),
     );
   }
 }
