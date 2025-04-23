@@ -3,6 +3,9 @@ const prisma = new PrismaClient();
 
 const saveDriverDocuments = async (req, res) => {
   try {
+    console.log("Request body:", req.body);
+    console.log("Files received:", req.files ? Object.keys(req.files).length : 0);
+    
     const {
       driverId,
       branchName,
@@ -13,28 +16,36 @@ const saveDriverDocuments = async (req, res) => {
 
     const files = req.files;
 
-    // S3 folder prefixes
-    const photoUrl = files.photo[0].location.replace(
-      files.photo[0].key,
-      `Driver_Documents/Drivers_Photo/${files.photo[0].key.split('/').pop()}`
-    );
-    const idCardUrl = files.idCard[0].location.replace(
-      files.idCard[0].key,
-      `Driver_Documents/Driver_ID_Card/${files.idCard[0].key.split('/').pop()}`
-    );
-    const drivingLicenseUrl = files.drivingLicense[0].location.replace(
-      files.drivingLicense[0].key,
-      `Driver_Documents/Driver_Driving_License/${files.drivingLicense[0].key.split('/').pop()}`
-    );
-    const vehicleImageUrl = files.vehicleImage[0].location.replace(
-      files.vehicleImage[0].key,
-      `Driver_Documents/Driver_Vehicle_Image/${files.vehicleImage[0].key.split('/').pop()}`
-    );
-    const bankProofUrl = files.bankProof[0].location.replace(
-      files.bankProof[0].key,
-      `Driver_Documents/Drivers_BankProof/${files.bankProof[0].key.split('/').pop()}`
-    );
+    // Validate required fields
+    if (!driverId) {
+      return res.status(400).json({ error: 'Driver ID is required' });
+    }
+    
+    if (!files || !files.photo || !files.idCard || !files.drivingLicense || 
+        !files.vehicleImage || !files.bankProof) {
+      return res.status(400).json({ error: 'All document files are required' });
+    }
 
+    // Helper function to get S3 URL from file
+    const getS3Url = (file) => {
+      // Check if we have location (older AWS SDK) or key is set directly
+      if (file.location) {
+        return file.location;
+      } 
+      
+      // For newer AWS SDK
+      return `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${file.key}`;
+    };
+
+    // Get S3 URLs for all files
+    const photoUrl = getS3Url(files.photo[0]);
+    const idCardUrl = getS3Url(files.idCard[0]);
+    const drivingLicenseUrl = getS3Url(files.drivingLicense[0]);
+    const vehicleImageUrl = getS3Url(files.vehicleImage[0]);
+    const bankProofUrl = getS3Url(files.bankProof[0]);
+
+    console.log("Creating record with driver ID:", driverId);
+    
     const driverDoc = await prisma.driverDocuments.upsert({
       where: { driverId },
       update: {
@@ -62,10 +73,11 @@ const saveDriverDocuments = async (req, res) => {
       },
     });
 
+    console.log("Documents saved successfully:", driverDoc.id);
     res.status(200).json({ message: 'Documents uploaded', data: driverDoc });
   } catch (err) {
     console.error('Error saving driver documents:', err);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: `Server error: ${err.message}` });
   }
 };
 

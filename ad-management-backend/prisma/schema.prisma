@@ -31,22 +31,35 @@ model DriverRegistration {
 }
 
 model DriverDocuments {
-  id                String   @id @default(uuid())
-  driverId          String   @unique
-  photoUrl          String
-  idCardUrl         String
-  drivingLicenseUrl String
-  vehicleImageUrl   String
-  bankProofUrl      String
-  branchName        String
-  bankName          String
-  ifscCode          String
-  accountNumber     String
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                    String   @id @default(uuid())
+  driverId              String   @unique
+  photoUrl              String
+  idCardUrl             String
+  drivingLicenseUrl     String
+  vehicleImageUrl       String
+  bankProofUrl          String
 
-  // 🔗 Foreign key relation
-  driver            DriverRegistration @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  // 🏦 Bank Details
+  branchName            String
+  bankName              String
+  ifscCode              String
+  accountNumber         String
+
+  // ✅ Document statuses
+  photoStatus           String   @default("PENDING") // APPROVED | REJECTED | PENDING
+  idCardStatus          String   @default("PENDING")
+  drivingLicenseStatus  String   @default("PENDING")
+  vehicleImageStatus    String   @default("PENDING")
+  bankProofStatus       String   @default("PENDING")
+
+  // ✅ Overall verification status and admin message
+  verificationStatus    String   @default("PENDING") // APPROVED | REJECTED | PENDING
+  adminMessage          String?  // Custom message from admin if rejected
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  driver                DriverRegistration @relation(fields: [driverId], references: [id], onDelete: Cascade)
 }
 
 enum DriverVehicleType {

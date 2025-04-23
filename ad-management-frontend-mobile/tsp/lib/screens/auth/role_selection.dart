@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tsp/screens/admin/admin_login.dart';
+import 'package:tsp/screens/admin/admin_auth/admin_login.dart';
 import 'package:tsp/screens/company/company_auth/company_login.dart';
 import 'package:tsp/screens/driver/driver_auth/driver_login.dart';
 
