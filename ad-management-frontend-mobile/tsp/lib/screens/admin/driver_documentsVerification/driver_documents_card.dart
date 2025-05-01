@@ -127,17 +127,51 @@ class _DriverDocumentCardState extends State<DriverDocumentCard> {
   Widget _buildImage() {
     if (isLoading) {
       return const SizedBox(
-          height: 250, child: Center(child: CircularProgressIndicator()));
+        height: 250,
+        child: Center(child: CircularProgressIndicator()),
+      );
     }
     if (isError || imageData == null) {
       return const SizedBox(
-          height: 250, child: Center(child: Text("Failed to load image")));
+        height: 250,
+        child: Center(child: Text("Failed to load image")),
+      );
     }
-    return Image.memory(
-      imageData!,
-      height: 250,
-      width: double.infinity,
-      fit: BoxFit.cover,
+
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (_) => Dialog(
+            insetPadding: const EdgeInsets.all(0),
+            backgroundColor: Colors.black,
+            child: Stack(
+              children: [
+                InteractiveViewer(
+                  child: Center(
+                    child: Image.memory(imageData!),
+                  ),
+                ),
+                Positioned(
+                  top: 30,
+                  right: 20,
+                  child: IconButton(
+                    icon:
+                        const Icon(Icons.close, color: Colors.white, size: 30),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      child: Image.memory(
+        imageData!,
+        height: 250,
+        width: double.infinity,
+        fit: BoxFit.cover,
+      ),
     );
   }
 }

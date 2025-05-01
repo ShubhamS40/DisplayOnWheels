@@ -77,3 +77,87 @@ enum DriverVehicleType {
   Wagon
   Other
 }
+
+
+
+model CompanyRegistration {
+  id                   String             @id @default(uuid())
+  businessName         String
+  businessType       CompanyBusinessType
+  email                String             @unique
+  contactNumber        String
+  password             String
+  acceptedTerms        Boolean
+  isEmailVerified      Boolean            @default(false)
+
+  otp                  String?
+  otpExpires           DateTime?
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
+
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  documents            CompanyDocuments?
+}
+
+model CompanyDocuments {
+  id                        String   @id @default(uuid())
+  companyId                 String   @unique
+
+  companyRegistrationUrl    String?
+  idCardUrl                 String?
+  gstNumberUrl              String?
+
+  // Company Details
+  companyName               String
+  companyType               CompanyType
+  companyAddress            String
+  companyCity              String
+  companyState             String
+  companyCountry           String
+  companyZipCode           String
+  
+ 
+
+  // 🗂 Individual document statuses
+  companyRegistrationStatus String   @default("PENDING") // APPROVED | REJECTED | PENDING
+  idCardStatus              String   @default("PENDING")
+  gstNumberStatus           String   @default("PENDING")
+
+
+  // ✅ Overall verification status and admin message
+  verificationStatus        String   @default("PENDING") // APPROVED | REJECTED | PENDING
+  adminMessage              String?
+
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  company                   CompanyRegistration @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+
+enum CompanyType {
+  Individual
+  Partnership
+  Corporation
+  Limited_Liability_Company
+  Non_Profit_Organization
+  Cooperative
+  Government_Agency
+  Other
+}
+enum CompanyBusinessType {
+  ECommerce
+  Retail
+  Manufacturing
+  Service_Provider
+  Technology
+  Healthcare
+  Education
+  Finance
+  Real_Estate
+  Transportation
+  Hospitality
+  Other
+}

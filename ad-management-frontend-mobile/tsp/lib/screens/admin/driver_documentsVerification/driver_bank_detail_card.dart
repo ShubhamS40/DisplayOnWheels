@@ -16,7 +16,10 @@ class DriverBankDetailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+
     return Card(
+      elevation: 4,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
@@ -24,15 +27,47 @@ class DriverBankDetailCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Bank Details",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text("Bank: $bankName"),
-            Text("Branch: $branchName"),
-            Text("IFSC Code: $ifscCode"),
-            Text("Account Number: $accountNumber"),
+            Row(
+              children: [
+                Icon(Icons.account_balance_wallet, color: primary),
+                const SizedBox(width: 10),
+                Text(
+                  "Bank Details",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: primary,
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 20, thickness: 1),
+            _buildInfoRow(Icons.account_balance, "Bank", bankName),
+            _buildInfoRow(Icons.location_city, "Branch", branchName),
+            _buildInfoRow(Icons.confirmation_number, "IFSC Code", ifscCode),
+            _buildInfoRow(Icons.numbers, "Account Number", accountNumber),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: Colors.grey[700]),
+          const SizedBox(width: 10),
+          Text(
+            "$label: ",
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          Expanded(
+            child: Text(value),
+          ),
+        ],
       ),
     );
   }

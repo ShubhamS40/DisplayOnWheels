@@ -1,5 +1,3 @@
-// driver_document_card.dart
-import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -7,11 +5,10 @@ import 'package:tsp/screens/admin/driver_documentsVerification/driver_detail_car
 import 'package:tsp/screens/admin/driver_documentsVerification/driver_documents_card.dart';
 import 'driver_bank_detail_card.dart';
 
-// driver_verification.dart
-
 class DriverVerification extends StatefulWidget {
   final String driverId;
-  const DriverVerification({required this.driverId});
+  const DriverVerification({Key? key, required this.driverId})
+      : super(key: key);
 
   @override
   State<DriverVerification> createState() => _DriverVerificationState();
@@ -85,65 +82,71 @@ class _DriverVerificationState extends State<DriverVerification> {
 
   @override
   Widget build(BuildContext context) {
-    if (driverData == null)
+    if (driverData == null) {
       return const Center(child: CircularProgressIndicator());
+    }
 
     final driver = driverData!['driver'];
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          DriverDetailCard(driver: driver),
-          const SizedBox(height: 16),
-          DriverBankDetailCard(
-            bankName: driverData!['bankName'],
-            branchName: driverData!['branchName'],
-            ifscCode: driverData!['ifscCode'],
-            accountNumber: driverData!['accountNumber'],
-          ),
-          const SizedBox(height: 16),
-          DriverDocumentCard(
-            documentType: "Photo",
-            documentUrl: driverData!['photoUrl'],
-            status: docStatus['photoStatus']!,
-            onStatusChanged: (status, reason) =>
-                updateStatus("photoStatus", status, reason),
-          ),
-          DriverDocumentCard(
-            documentType: "ID Card",
-            documentUrl: driverData!['idCardUrl'],
-            status: docStatus['idCardStatus']!,
-            onStatusChanged: (status, reason) =>
-                updateStatus("idCardStatus", status, reason),
-          ),
-          DriverDocumentCard(
-            documentType: "Driving License",
-            documentUrl: driverData!['drivingLicenseUrl'],
-            status: docStatus['drivingLicenseStatus']!,
-            onStatusChanged: (status, reason) =>
-                updateStatus("drivingLicenseStatus", status, reason),
-          ),
-          DriverDocumentCard(
-            documentType: "Vehicle Image",
-            documentUrl: driverData!['vehicleImageUrl'],
-            status: docStatus['vehicleImageStatus']!,
-            onStatusChanged: (status, reason) =>
-                updateStatus("vehicleImageStatus", status, reason),
-          ),
-          DriverDocumentCard(
-            documentType: "Bank Proof",
-            documentUrl:
-                "https://displayonwheel.s3.ap-south-1.amazonaws.com/Driver_Documents/Drivers_Photo/2e786544-264f-45af-b062-259a8b10fa03_scaled_logo.jpg",
-            status: docStatus['bankProofStatus']!,
-            onStatusChanged: (status, reason) =>
-                updateStatus("bankProofStatus", status, reason),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: submitVerification,
-            child: const Text('Submit Verification'),
-          ),
-        ],
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Driver Verification'),
+        backgroundColor: Colors.orange,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            DriverDetailCard(driver: driver),
+            const SizedBox(height: 16),
+            DriverBankDetailCard(
+              bankName: driverData!['bankName'],
+              branchName: driverData!['branchName'],
+              ifscCode: driverData!['ifscCode'],
+              accountNumber: driverData!['accountNumber'],
+            ),
+            const SizedBox(height: 16),
+            _buildDocCard("Photo", "photoStatus", driverData!['photoUrl']),
+            _buildDocCard("ID Card", "idCardStatus", driverData!['idCardUrl']),
+            _buildDocCard("Driving License", "drivingLicenseStatus",
+                driverData!['drivingLicenseUrl']),
+            _buildDocCard("Vehicle Image", "vehicleImageStatus",
+                driverData!['vehicleImageUrl']),
+            _buildDocCard("Bank Proof", "bankProofStatus",
+                "https://displayonwheel.s3.ap-south-1.amazonaws.com/Driver_Documents/Drivers_Photo/2e786544-264f-45af-b062-259a8b10fa03_scaled_logo.jpg"),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: submitVerification,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Submit Verification',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDocCard(String title, String statusKey, String url) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: DriverDocumentCard(
+        documentType: title,
+        documentUrl: url,
+        status: docStatus[statusKey]!,
+        onStatusChanged: (status, reason) =>
+            updateStatus(statusKey, status, reason),
       ),
     );
   }

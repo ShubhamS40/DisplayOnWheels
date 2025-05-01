@@ -7,7 +7,10 @@ class DriverDetailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+
     return Card(
+      elevation: 4,
       margin: const EdgeInsets.all(16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
@@ -15,17 +18,63 @@ class DriverDetailCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(driver['fullName'] ?? 'Unknown',
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text("Email: ${driver['email'] ?? 'N/A'}"),
-            Text("Phone: ${driver['contactNumber'] ?? 'N/A'}"),
-            Text(
-                "Vehicle: ${driver['vehicleNumber'] ?? 'N/A'} (${driver['vehicleType'] ?? 'N/A'})"),
-            Text("Address: ${driver['address'] ?? 'N/A'}"),
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: primary.withOpacity(0.1),
+                  child: Icon(Icons.person, color: primary),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    driver['fullName'] ?? 'Unknown',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildInfoRow(context, Icons.email, "Email", driver['email']),
+            _buildInfoRow(
+                context, Icons.phone, "Phone", driver['contactNumber']),
+            _buildInfoRow(
+              context,
+              Icons.directions_car,
+              "Vehicle",
+              "${driver['vehicleNumber'] ?? 'N/A'} (${driver['vehicleType'] ?? 'N/A'})",
+            ),
+            _buildInfoRow(
+                context, Icons.location_on, "Address", driver['address']),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String? value,
+  ) {
+    final primary = Theme.of(context).colorScheme.primary;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Icon(icon, color: primary, size: 20),
+          const SizedBox(width: 10),
+          Text(
+            "$label: ",
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          Expanded(
+            child: Text(value ?? 'N/A'),
+          ),
+        ],
       ),
     );
   }

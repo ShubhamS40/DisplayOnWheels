@@ -4,7 +4,10 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const driverAuth = require('./routes/Driver/DriverAuth/driverAuth'); // Adjust the path as needed
 const driverDocumentsUpload = require('./routes/Driver/DriverDocumentsUpload/driverDocumentsUpload'); // Adjust the path as needed
-const getPendingDrivers = require('./routes/Admin/DriverDocumnets/driverDocumnetsPendingVerification'); // Adjust the path as needed
+const getPendingDrivers = require('./routes/Admin/DriverDocumnets/driverDocumnetsPendingVerification');
+const getPendingCompanies=require('./routes/Admin/CompanyDocumnets/comapnyDocumentsPendingVerification') // Adjust the path as needed
+const companyAuth = require('./routes/Company/CompanyAuth/companyAuth'); // Adjust the path as needed
+const companyDocumentsUpload = require('./routes/Company/CompanyDocuments/companyDocuments'); // Adjust the path as needed
 
 
 // Middleware
@@ -31,10 +34,25 @@ app.use('/api/driver', require('./routes/Driver/DriverDocumentsUpload/driverDocu
 
 
 
+// Company All Routes
+ app.use('/api/company', companyAuth); // Adjust the path as needed
+ 
+ // Use CompanyDocumentsUpload related routes
+ app.use('/api/company-docs', companyDocumentsUpload); // Adjust the path as needed
+
+
+// Admin Verify Company Pending Doucuments For Approval
+
+app.use('/api/admin',getPendingCompanies); // Adjust the path as needed
+
+
 // Admin Verify Driver Pending Doucuments For Approval
 
 app.use('/api/admin',getPendingDrivers); // Adjust the path as needed
 
+app.get('/hi', (req, res) => {
+  res.send('Welcome to the API!');
+})
 // Set up server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
