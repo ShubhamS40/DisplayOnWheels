@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:tsp/utils/theme_constants.dart';
 
-class RechargePlanScreen extends StatefulWidget {
-  const RechargePlanScreen({super.key});
+class AdRechargePlanScreen extends StatefulWidget {
+  final bool isAdmin;
+  
+  const AdRechargePlanScreen({
+    super.key, 
+    this.isAdmin = false
+  });
 
   @override
-  State<RechargePlanScreen> createState() => _RechargePlanScreenState();
+  State<AdRechargePlanScreen> createState() => _AdRechargePlanScreenState();
 }
 
-class _RechargePlanScreenState extends State<RechargePlanScreen> {
+class _AdRechargePlanScreenState extends State<AdRechargePlanScreen> {
   int? _selectedPlanIndex;
   Map<String, dynamic>? _selectedPlanDetails;
+  final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _featuresController = TextEditingController();
   
   // Enhanced plan data with more details
   final List<Map<String, dynamic>> plans = const [
@@ -57,185 +65,313 @@ class _RechargePlanScreenState extends State<RechargePlanScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final orangeColor = const Color(0xFFFF5722); // Primary orange color
-    
+    final textColor = isDarkMode ? Colors.white : ThemeConstants.textPrimary;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Ad Plan'),
-        elevation: 0,
-        backgroundColor: isDarkMode ? Colors.black : Colors.white,
-        foregroundColor: isDarkMode ? Colors.white : Colors.black,
+        title: Text(widget.isAdmin ? 'Manage Recharge Plans' : 'Recharge Plans'),
+        backgroundColor: ThemeConstants.primaryColor,
+        actions: widget.isAdmin ? [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () {
+              _showAddPlanDialog(context);
+            },
+          ),
+        ] : null,
       ),
-      body: Container(
-        color: isDarkMode ? Colors.black : Colors.white,
-        child: Column(
-          children: [
-            // Header section
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              width: double.infinity,
-              color: isDarkMode 
-                ? Colors.black 
-                : orangeColor.withOpacity(0.1),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Choose Your Ad Campaign Plan',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: isDarkMode ? Colors.white : Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Select the perfect plan that fits your advertising needs',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
-                    ),
-                  ),
-                ],
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              widget.isAdmin 
+                ? 'Configure and manage available recharge plans'
+                : 'Choose a plan that fits your advertising needs',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                color: textColor.withOpacity(0.7),
               ),
             ),
-            
-            // Plans section
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                itemCount: plans.length,
-                itemBuilder: (context, index) {
-                  final plan = plans[index];
-                  final isSelected = _selectedPlanIndex == index;
-                  
-                  return PlanCard(
-                    plan: plan,
-                    isSelected: isSelected,
-                    onTap: () {
-                      setState(() {
-                        _selectedPlanIndex = index;
-                        _selectedPlanDetails = {
-                          'planName': plan['title'],
-                          'price': plan['price'],
-                          'duration': plan['duration'],
-                          'features': plan['features'],
-                        };
-                      });
-                    },
-                    isDarkMode: isDarkMode,
-                    orangeColor: orangeColor,
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16.0),
+              itemCount: plans.length,
+              itemBuilder: (context, index) {
+                final plan = plans[index];
+                final isSelected = _selectedPlanIndex == index;
+                
+                return PlanCard(
+                  title: plan['title'],
+                  subtitle: plan['subtitle'],
+                  note: plan['note'],
+                  priceString: plan['priceString'],
+                  duration: plan['duration'],
+                  features: plan['features'],
+                  isSelected: isSelected,
+                  isRecommended: plan['recommended'],
+                  onSelect: () {
+                    setState(() {
+                      _selectedPlanIndex = index;
+                      _selectedPlanDetails = plan;
+                    });
+                  },
+                  isAdmin: widget.isAdmin,
+                  onEdit: widget.isAdmin ? () {
+                    _showEditPlanDialog(context, plan, index);
+                  } : null,
+                );
+              },
+            ),
+          ),
+          if (_selectedPlanDetails != null && !widget.isAdmin)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  // Handle checkout logic
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Processing payment for ${_selectedPlanDetails!['title']}'),
+                      backgroundColor: ThemeConstants.primaryColor,
+                    ),
                   );
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ThemeConstants.primaryColor,
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  minimumSize: Size(double.infinity, 0),
+                ),
+                child: Text(
+                  'Proceed to Checkout (${_selectedPlanDetails!['priceString']})',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
-            
-            // Bottom action bar
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDarkMode ? Colors.black : Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    offset: const Offset(0, -2),
-                    blurRadius: 5,
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  // Selected plan info
-                  Expanded(
-                    child: _selectedPlanIndex != null
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                plans[_selectedPlanIndex!]['title'],
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: isDarkMode ? Colors.white : Colors.black,
-                                ),
-                              ),
-                              Text(
-                                plans[_selectedPlanIndex!]['priceString'],
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 14,
-                                  color: orangeColor,
-                                ),
-                              ),
-                            ],
-                          )
-                        : Text(
-                            'Select a plan to continue',
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white54 : Colors.black54,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                  ),
-                  
-                  // Continue button
-                  ElevatedButton(
-                    onPressed: _selectedPlanIndex != null
-                        ? () {
-                            Navigator.pop(context, _selectedPlanDetails);
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: orangeColor,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Continue',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
+  }
+  
+  void _showAddPlanDialog(BuildContext context) {
+    final formKey = GlobalKey<FormState>();
+    String title = '';
+    String subtitle = '';
+    String note = '';
+    String price = '';
+    String duration = '';
+    String features = '';
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Add New Recharge Plan'),
+        content: SingleChildScrollView(
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  decoration: InputDecoration(labelText: 'Title (e.g. "15 Days Plan")'),
+                  validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                  onSaved: (value) => title = value!,
+                ),
+                TextFormField(
+                  decoration: InputDecoration(labelText: 'Subtitle'),
+                  onSaved: (value) => subtitle = value!,
+                ),
+                TextFormField(
+                  decoration: InputDecoration(labelText: 'Note'),
+                  onSaved: (value) => note = value!,
+                ),
+                TextFormField(
+                  decoration: InputDecoration(labelText: 'Price (e.g. "Rs 5,000")'),
+                  validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                  onSaved: (value) => price = value!,
+                  keyboardType: TextInputType.number,
+                ),
+                TextFormField(
+                  decoration: InputDecoration(labelText: 'Duration (e.g. "15 days")'),
+                  validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                  onSaved: (value) => duration = value!,
+                ),
+                TextFormField(
+                  decoration: InputDecoration(labelText: 'Features (comma separated)'),
+                  validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                  onSaved: (value) => features = value!,
+                  maxLines: 3,
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                formKey.currentState!.save();
+                // Add new plan logic here
+                Navigator.pop(context);
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('New plan added successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ThemeConstants.primaryColor,
+            ),
+            child: Text('Add Plan'),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  void _showEditPlanDialog(BuildContext context, Map<String, dynamic> plan, int index) {
+    final formKey = GlobalKey<FormState>();
+    _priceController.text = plan['priceString'].toString().replaceAll('Rs ', '');
+    _featuresController.text = plan['features'].join(', ');
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Edit ${plan['title']}'),
+        content: SingleChildScrollView(
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  initialValue: plan['title'],
+                  decoration: InputDecoration(labelText: 'Title'),
+                  validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                ),
+                TextFormField(
+                  initialValue: plan['subtitle'],
+                  decoration: InputDecoration(labelText: 'Subtitle'),
+                ),
+                TextFormField(
+                  controller: _priceController,
+                  decoration: InputDecoration(labelText: 'Price (in Rs)'),
+                  validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                  keyboardType: TextInputType.number,
+                ),
+                TextFormField(
+                  initialValue: plan['duration'],
+                  decoration: InputDecoration(labelText: 'Duration'),
+                  validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                ),
+                TextFormField(
+                  controller: _featuresController,
+                  decoration: InputDecoration(
+                    labelText: 'Features',
+                    helperText: 'Separate features with commas',
+                  ),
+                  validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                  maxLines: 3,
+                ),
+                SwitchListTile(
+                  title: Text('Recommended Plan'),
+                  value: plan['recommended'] ?? false,
+                  onChanged: (value) {
+                    // Implementation would set this value
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                // Update plan logic here
+                Navigator.pop(context);
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Plan updated successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ThemeConstants.primaryColor,
+            ),
+            child: Text('Save Changes'),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  @override
+  void dispose() {
+    _priceController.dispose();
+    _featuresController.dispose();
+    super.dispose();
   }
 }
 
 class PlanCard extends StatelessWidget {
-  final Map<String, dynamic> plan;
+  final String title;
+  final String subtitle;
+  final String note;
+  final String priceString;
+  final String duration;
+  final List<dynamic> features;
   final bool isSelected;
-  final VoidCallback onTap;
-  final bool isDarkMode;
-  final Color orangeColor;
+  final bool isRecommended;
+  final VoidCallback onSelect;
+  final bool isAdmin;
+  final VoidCallback? onEdit;
 
   const PlanCard({
     Key? key,
-    required this.plan,
+    required this.title,
+    required this.subtitle,
+    required this.note,
+    required this.priceString,
+    required this.duration,
+    required this.features,
     required this.isSelected,
-    required this.onTap,
-    required this.isDarkMode,
-    required this.orangeColor,
+    required this.isRecommended,
+    required this.onSelect,
+    this.isAdmin = false,
+    this.onEdit,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDarkMode ? Colors.white : ThemeConstants.textPrimary;
+    final orangeColor = const Color(0xFFFF5722); // Primary orange color
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: InkWell(
-        onTap: onTap,
+        onTap: onSelect,
         borderRadius: BorderRadius.circular(12),
         child: Container(
           decoration: BoxDecoration(
@@ -278,7 +414,7 @@ class PlanCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            plan['title'],
+                            title,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
@@ -287,7 +423,7 @@ class PlanCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            plan['subtitle'],
+                            subtitle,
                             style: TextStyle(
                               color: orangeColor,
                               fontWeight: FontWeight.w500,
@@ -310,7 +446,7 @@ class PlanCard extends StatelessWidget {
                         child: Column(
                           children: [
                             Text(
-                              plan['priceString'],
+                              priceString,
                               style: TextStyle(
                                 color: orangeColor,
                                 fontWeight: FontWeight.bold,
@@ -318,7 +454,7 @@ class PlanCard extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              plan['duration'],
+                              duration,
                               style: TextStyle(
                                 color: orangeColor,
                                 fontSize: 12,
@@ -331,7 +467,7 @@ class PlanCard extends StatelessWidget {
                   ),
                   
                   // Recommended ribbon
-                  if (plan['recommended'])
+                  if (isRecommended)
                     Positioned(
                       top: -5,
                       right: -5,
@@ -364,7 +500,7 @@ class PlanCard extends StatelessWidget {
               
               // Plan features
               ...List.generate(
-                plan['features'].length,
+                features.length,
                 (index) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Row(
@@ -376,7 +512,7 @@ class PlanCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        plan['features'][index],
+                        features[index],
                         style: TextStyle(
                           fontSize: 14,
                           color: isDarkMode ? Colors.white70 : Colors.black87,
@@ -391,7 +527,7 @@ class PlanCard extends StatelessWidget {
               
               // Plan description
               Text(
-                plan['note'],
+                note,
                 style: TextStyle(
                   color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                   fontSize: 13,
@@ -432,6 +568,14 @@ class PlanCard extends StatelessWidget {
                         ),
                       ),
                     ],
+                  ),
+                ),
+              if (isAdmin)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    icon: Icon(Icons.edit),
+                    onPressed: onEdit,
                   ),
                 ),
             ],

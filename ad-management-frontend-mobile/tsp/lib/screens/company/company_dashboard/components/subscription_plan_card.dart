@@ -102,7 +102,7 @@ class SubscriptionPlanCard extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => RechargePlanScreen(),
+                          builder: (context) => AdRechargePlanScreen(),
                         ),
                       );
                     },

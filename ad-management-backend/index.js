@@ -8,7 +8,7 @@ const getPendingDrivers = require('./routes/Admin/DriverDocumnets/driverDocumnet
 const getPendingCompanies=require('./routes/Admin/CompanyDocumnets/comapnyDocumentsPendingVerification') // Adjust the path as needed
 const companyAuth = require('./routes/Company/CompanyAuth/companyAuth'); // Adjust the path as needed
 const companyDocumentsUpload = require('./routes/Company/CompanyDocuments/companyDocuments'); // Adjust the path as needed
-
+const adminAuth = require('./routes/Admin/AdminAuth/adminAuth'); // Adjust the path as needed
 
 // Middleware
 // Enable CORS for all routes and origins (for development)
@@ -22,6 +22,8 @@ app.use(cors({
 app.use(bodyParser.json({ limit: '50mb' })); 
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true })); // for parsing application/x-www-form-urlencoded
 
+
+// Driver All Routes
 // Use driver-Authentication Related routes
 app.use('/api/driver', driverAuth); // Adjust the path as needed
 
@@ -44,6 +46,15 @@ app.use('/api/driver', require('./routes/Driver/DriverDocumentsUpload/driverDocu
 // Admin Verify Company Pending Doucuments For Approval
 
 app.use('/api/admin',getPendingCompanies); // Adjust the path as needed
+
+
+// Admin Authentication Routes
+app.use('/api/admin', adminAuth); // Adjust the path as needed
+
+
+
+
+
 
 
 // Admin Verify Driver Pending Doucuments For Approval

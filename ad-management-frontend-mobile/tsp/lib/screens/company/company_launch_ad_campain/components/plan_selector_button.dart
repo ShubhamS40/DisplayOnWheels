@@ -32,10 +32,10 @@ class PlanSelectorButton extends StatelessWidget {
               final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const RechargePlanScreen(),
+                  builder: (context) => const AdRechargePlanScreen(),
                 ),
               );
-              
+
               if (result != null && result is Map<String, dynamic>) {
                 // Process the selected plan data
                 onPlanSelected(

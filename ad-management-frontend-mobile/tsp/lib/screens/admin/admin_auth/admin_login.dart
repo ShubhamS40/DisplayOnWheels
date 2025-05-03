@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'dart:convert';
+import 'package:flutter/services.dart';
+import '../../../utils/theme_constants.dart';
+import 'admin_otp_verification.dart';
+import 'admin_forgot_password.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   @override
@@ -10,191 +16,328 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool isPasswordVisible = false;
+  bool isLoading = false;
+  String? errorMessage;
+
+  // Initialize Dio instance with base URL
+  final Dio _dio = Dio(BaseOptions(
+    baseUrl: "http://localhost:5000/api",
+    connectTimeout: Duration(milliseconds: 5000),
+    receiveTimeout: Duration(milliseconds: 3000),
+  ));
+
+  Future<void> _login() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    try {
+      final response = await _dio.post(
+        '/admin/login',
+        data: {
+          'email': emailController.text.trim(),
+          'password': passwordController.text,
+        },
+      );
+
+      setState(() {
+        isLoading = false;
+      });
+
+      if (response.statusCode == 200) {
+        // API returned success, verify the response structure
+        if (response.data != null && response.data['msg'] != null) {
+          // OTP was sent successfully, navigate to OTP verification
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AdminOtpVerificationScreen(
+                email: emailController.text.trim(),
+              ),
+            ),
+          );
+        } else {
+          // Unexpected success response structure
+          setState(() {
+            errorMessage = 'Unexpected response from server';
+          });
+        }
+      } else {
+        // Handle other status codes (should not reach here due to Dio exceptions)
+        setState(() {
+          errorMessage = 'Unexpected response status: ${response.statusCode}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        if (e is DioException) {
+          if (e.response != null) {
+            // Server responded with an error status code
+            if (e.response?.statusCode == 401 || e.response?.statusCode == 400) {
+              errorMessage = 'Invalid credentials';
+            } else {
+              errorMessage = e.response?.data['message'] ?? 'Server error';
+            }
+          } else if (e.type == DioExceptionType.connectionTimeout || 
+                    e.type == DioExceptionType.receiveTimeout) {
+            errorMessage = 'Connection timeout. Please check your internet.';
+          } else {
+            errorMessage = 'Connection error. Please check your internet.';
+          }
+        } else {
+          errorMessage = 'An unexpected error occurred';
+        }
+      });
+      print('Login error: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final Size screenSize = MediaQuery.of(context).size;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDarkMode ? Colors.black : Colors.white;
-    final textColor = isDarkMode ? Colors.white : Colors.black;
-    final containerColor = isDarkMode ? Colors.grey[900] : Colors.white;
-    final shadowColor =
-        isDarkMode ? Colors.black54 : Colors.grey.withOpacity(0.8);
-    final buttonColor = isDarkMode ? Colors.orangeAccent : Colors.orange;
+    final backgroundColor = isDarkMode ? ThemeConstants.darkBackground : ThemeConstants.lightBackground;
+    final textColor = isDarkMode ? Colors.white : ThemeConstants.textPrimary;
 
     return Scaffold(
       backgroundColor: backgroundColor,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 0),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Illustration Image
-                Image.asset(
-                  "assets/authsvg/admin_login.png", // Replace with your asset
-                  height: 400,
-                ),
-                const SizedBox(height: 20),
-
-                // **Container with Rounded Corners & Shadow**
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  height: MediaQuery.of(context).size.height / 2.1,
-                  decoration: BoxDecoration(
-                    color: containerColor,
-                    borderRadius: BorderRadius.circular(60),
-                    boxShadow: [
-                      BoxShadow(
-                        color: shadowColor,
-                        blurRadius: 40,
-                        spreadRadius: 3,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // Title
-                        Text(
+                SizedBox(height: screenSize.height * 0.05),
+                
+                // Title with animation effect
+                TweenAnimationBuilder(
+                  tween: Tween<double>(begin: 0, end: 1),
+                  duration: Duration(milliseconds: 800),
+                  builder: (context, double value, child) {
+                    return Opacity(
+                      opacity: value,
+                      child: Transform.translate(
+                        offset: Offset(0, 20 * (1 - value)),
+                        child: Text(
                           "Admin Login",
                           style: TextStyle(
-                            fontSize: 22,
+                            fontSize: 28,
                             fontWeight: FontWeight.bold,
-                            color: textColor,
+                            color: ThemeConstants.primaryColor,
                           ),
                         ),
-                        const SizedBox(height: 20),
-
-                        // Email Field
-                        buildTextField(
-                          controller: emailController,
-                          label: "Email",
-                          hint: "Enter Your Email",
-                          icon: Icons.email,
-                          textColor: textColor,
-                        ),
-
-                        // Password Field
-                        buildPasswordField(
-                            passwordController, "Password", textColor),
-
-                        const SizedBox(height: 20),
-
-                        // Login Button
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                // Login Logic
-                              }
+                      ),
+                    );
+                  },
+                ),
+                
+                SizedBox(height: screenSize.height * 0.03),
+                
+                // Illustration Image from URL with animation
+                TweenAnimationBuilder(
+                  tween: Tween<double>(begin: 0, end: 1),
+                  duration: Duration(milliseconds: 1000),
+                  builder: (context, double value, child) {
+                    return Opacity(
+                      opacity: value,
+                      child: Transform.scale(
+                        scale: 0.8 + (0.2 * value),
+                        child: Container(
+                          width: screenSize.width * 0.8,
+                          constraints: BoxConstraints(
+                            maxHeight: screenSize.height * 0.3,
+                          ),
+                          child: Image.network(
+                            ThemeConstants.loginIllustrationUrl,
+                            fit: BoxFit.contain,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  color: ThemeConstants.primaryColor,
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded / 
+                                        (loadingProgress.expectedTotalBytes ?? 1)
+                                      : null,
+                                ),
+                              );
                             },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: buttonColor,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                            ),
-                            child: const Text(
-                              "Login",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.admin_panel_settings,
+                                size: 120,
+                                color: ThemeConstants.primaryColor,
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                
+                SizedBox(height: screenSize.height * 0.04),
+
+                // Login Form with animation
+                TweenAnimationBuilder(
+                  tween: Tween<double>(begin: 0, end: 1),
+                  duration: Duration(milliseconds: 1200),
+                  builder: (context, double value, child) {
+                    return Opacity(
+                      opacity: value,
+                      child: Transform.translate(
+                        offset: Offset(0, 30 * (1 - value)),
+                        child: Container(
+                          padding: const EdgeInsets.all(25),
+                          decoration: ThemeConstants.getCardDecoration(isDarkMode),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Error message
+                                if (errorMessage != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                                      decoration: BoxDecoration(
+                                        color: ThemeConstants.error.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: ThemeConstants.error.withOpacity(0.3)),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.error_outline, color: ThemeConstants.error, size: 20),
+                                          SizedBox(width: 10),
+                                          Expanded(
+                                            child: Text(
+                                              errorMessage!,
+                                              style: TextStyle(color: ThemeConstants.error),
+                                              textAlign: TextAlign.left,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+                                // Email Field
+                                TextFormField(
+                                  controller: emailController,
+                                  style: TextStyle(color: textColor),
+                                  decoration: ThemeConstants.getInputDecoration(
+                                    label: "Email",
+                                    hint: "Enter Your Email",
+                                    prefixIcon: Icons.email,
+                                    isDarkMode: isDarkMode,
+                                  ),
+                                  keyboardType: TextInputType.emailAddress,
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) return "Email is required";
+                                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                                      return "Enter a valid email";
+                                    }
+                                    return null;
+                                  },
+                                ),
+
+                                SizedBox(height: 16),
+
+                                // Password Field
+                                TextFormField(
+                                  controller: passwordController,
+                                  obscureText: !isPasswordVisible,
+                                  style: TextStyle(color: textColor),
+                                  decoration: ThemeConstants.getInputDecoration(
+                                    label: "Password",
+                                    hint: "Enter Your Password",
+                                    prefixIcon: Icons.lock,
+                                    suffixIcon: isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                                    suffixIconOnPressed: () {
+                                      setState(() {
+                                        isPasswordVisible = !isPasswordVisible;
+                                      });
+                                    },
+                                    isDarkMode: isDarkMode,
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) return "Password is required";
+                                    if (value.length < 6) return "Password must be at least 6 characters";
+                                    return null;
+                                  },
+                                ),
+
+                                // Forgot Password
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 12, bottom: 20),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context, 
+                                          MaterialPageRoute(
+                                            builder: (context) => AdminForgotPasswordScreen(),
+                                          ),
+                                        );
+                                      },
+                                      child: Text(
+                                        "Forgot Password?",
+                                        style: TextStyle(
+                                          color: ThemeConstants.primaryColor,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                // Login Button
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: isLoading ? null : () {
+                                      if (_formKey.currentState!.validate()) {
+                                        _login();
+                                      }
+                                    },
+                                    style: ThemeConstants.primaryButtonStyle,
+                                    child: isLoading
+                                        ? SizedBox(
+                                            height: 20,
+                                            width: 20,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : const Text(
+                                            "Login",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-
-                        const SizedBox(height: 15),
-
-                        // Forgot Password
-                        TextButton(
-                          onPressed: () {
-                            // Forgot Password Logic
-                          },
-                          child: Text(
-                            "Forgot Password?",
-                            style: TextStyle(color: buttonColor),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  // Reusable Text Field Widget
-  Widget buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-    required Color textColor,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: TextFormField(
-        controller: controller,
-        style: TextStyle(color: textColor),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(color: textColor),
-          hintText: hint,
-          hintStyle: TextStyle(color: textColor.withOpacity(0.6)),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          prefixIcon: Icon(icon, color: textColor),
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) return "This field is required";
-          return null;
-        },
-      ),
-    );
-  }
-
-  // Reusable Password Field Widget
-  Widget buildPasswordField(
-      TextEditingController controller, String label, Color textColor) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: TextFormField(
-        controller: controller,
-        obscureText: !isPasswordVisible,
-        style: TextStyle(color: textColor),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(color: textColor),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          prefixIcon: Icon(Icons.lock, color: textColor),
-          suffixIcon: IconButton(
-            icon: Icon(
-              isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-              color: textColor,
-            ),
-            onPressed: () {
-              setState(() {
-                isPasswordVisible = !isPasswordVisible;
-              });
-            },
-          ),
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) return "Enter a password";
-          if (value.length < 6) return "Password must be at least 6 characters";
-          return null;
-        },
       ),
     );
   }

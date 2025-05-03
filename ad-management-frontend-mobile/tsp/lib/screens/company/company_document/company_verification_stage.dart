@@ -342,7 +342,7 @@ class _CompanyDocumentStatusScreenState
       // Look for specific document keywords in admin message
       String lowercaseMessage = adminMessage.toLowerCase();
       String lowercaseName = documentName.toLowerCase();
-      
+
       // Check if document name appears in admin message
       isDocumentInAdminMessage = lowercaseMessage.contains(lowercaseName) ||
           _isDocumentMatchingMessage(documentName, lowercaseMessage);
@@ -352,7 +352,9 @@ class _CompanyDocumentStatusScreenState
     bool needsAttention = docStatus == 'REJECTED' || isDocumentInAdminMessage;
 
     return GestureDetector(
-      onTap: needsAttention ? () => _navigateToReuploadDocument(documentTypeKey, documentName) : null,
+      onTap: needsAttention
+          ? () => _navigateToReuploadDocument(documentTypeKey, documentName)
+          : null,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
@@ -424,7 +426,8 @@ class _CompanyDocumentStatusScreenState
                 padding: const EdgeInsets.only(left: 8),
                 child: IconButton(
                   icon: Icon(Icons.upload_file, color: Colors.red),
-                  onPressed: () => _navigateToReuploadDocument(documentTypeKey, documentName),
+                  onPressed: () => _navigateToReuploadDocument(
+                      documentTypeKey, documentName),
                   tooltip: 'Re-upload document',
                 ),
               ),
@@ -438,17 +441,17 @@ class _CompanyDocumentStatusScreenState
   bool _isDocumentMatchingMessage(String documentName, String message) {
     switch (documentName.toLowerCase()) {
       case 'company registration':
-        return message.contains('company') || 
-               message.contains('registration') || 
-               message.contains('certificate');
+        return message.contains('company') ||
+            message.contains('registration') ||
+            message.contains('certificate');
       case 'id card':
-        return message.contains('id') || 
-               message.contains('card') || 
-               message.contains('identity');
+        return message.contains('id') ||
+            message.contains('card') ||
+            message.contains('identity');
       case 'gst number':
-        return message.contains('gst') || 
-               message.contains('tax') || 
-               message.contains('number');
+        return message.contains('gst') ||
+            message.contains('tax') ||
+            message.contains('number');
       default:
         return false;
     }
@@ -536,7 +539,7 @@ class _CompanyDocumentStatusScreenState
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => RechargePlanScreen(),
+                  builder: (context) => AdRechargePlanScreen(),
                 ),
               );
             },
@@ -593,22 +596,23 @@ class _CompanyDocumentStatusScreenState
       ),
     );
   }
-  
+
   void _navigateToReuploadDocument(String documentType, String documentName) {
     // Map the document type to the correct type expected by the backend
     String mappedDocType;
-    
+
     if (documentType.toLowerCase().contains('company')) {
       mappedDocType = 'companyRegDoc';
     } else if (documentType.toLowerCase().contains('id')) {
       mappedDocType = 'idCard';
     } else if (documentType.toLowerCase().contains('gst')) {
-      mappedDocType = 'gstNumber';  // Changed from 'gstDoc' to 'gstNumber' to match API expectations
+      mappedDocType =
+          'gstNumber'; // Changed from 'gstDoc' to 'gstNumber' to match API expectations
     } else {
       // Default fallback
       mappedDocType = documentType;
     }
-    
+
     Navigator.push(
       context,
       MaterialPageRoute(
