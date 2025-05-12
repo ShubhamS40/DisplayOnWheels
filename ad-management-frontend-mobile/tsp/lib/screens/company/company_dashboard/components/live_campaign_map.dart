@@ -34,7 +34,7 @@ class LiveCampaignMap extends StatelessWidget {
           children: [
             // Mock map image
             Image.asset(
-              'assets/images/map_placeholder.png',
+              'images/map_placeholder.png',
               fit: BoxFit.cover,
               width: double.infinity,
               height: double.infinity,

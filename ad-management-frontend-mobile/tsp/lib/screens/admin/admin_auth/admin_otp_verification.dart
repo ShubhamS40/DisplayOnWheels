@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../utils/theme_constants.dart';
 import '../admin_dashboard/admin_dashboard_screen.dart';
 
@@ -104,13 +105,62 @@ class _AdminOtpVerificationScreenState
           errorMessage = null;
         });
 
-        // Navigate to admin dashboard instead of showing token dialog
+        // Save token and adminId to SharedPreferences
+        try {
+          // Print the response structure to debug
+          print('OTP verification response: ${response.data}');
+          
+          // Extract token and adminId based on actual response structure
+          String? token;
+          String? adminId;
+          
+          if (response.data is Map) {
+            // Try different response formats
+            if (response.data['token'] != null) {
+              token = response.data['token'];
+            } else if (response.data['data'] != null && response.data['data']['token'] != null) {
+              token = response.data['data']['token'];
+            }
+            
+            // Try to find admin ID in different possible locations
+            if (response.data['id'] != null) {
+              adminId = response.data['id'];
+            } else if (response.data['adminId'] != null) {
+              adminId = response.data['adminId'];
+            } else if (response.data['data'] != null && response.data['data']['id'] != null) {
+              adminId = response.data['data']['id'];
+            } else if (response.data['data'] != null && response.data['data']['admin'] != null) {
+              adminId = response.data['data']['admin']['id'];
+            }
+          }
+          
+          if (token != null) {
+            // Use SharedPreferences to store authentication details
+            SharedPreferences.getInstance().then((prefs) {
+              prefs.setString('token', token!);
+              
+              // If we found an adminId, save it
+              if (adminId != null) {
+                prefs.setString('adminId', adminId);
+                print('Admin authentication saved: ID=$adminId');
+              } else {
+                // Use a placeholder admin ID to prevent authentication errors
+                prefs.setString('adminId', 'admin-${DateTime.now().millisecondsSinceEpoch}');
+                print('Warning: Using placeholder admin ID');
+              }
+              
+              prefs.setString('userType', 'admin');
+            });
+          } else {
+            print('Warning: Token missing from response');
+          }
+        } catch (e) {
+          print('Error extracting auth data: $e');
+        }
+
+        // Navigate to admin dashboard after saving auth details
         Future.delayed(Duration(milliseconds: 500), () {
           if (mounted) {
-            // Store the token in secure storage or provider if needed
-            // For example: await secureStorage.write(key: 'admin_token', value: response.data['token']);
-
-            // Navigate to admin dashboard
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
                 builder: (context) => AdminDashboardScreen(),

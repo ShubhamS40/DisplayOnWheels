@@ -20,7 +20,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
     precacheImage(
         const AssetImage('assets/images/earnings_chart.png'), context);
     precacheImage(
-        const AssetImage('assets/images/map_placeholder.jpg'), context);
+        const AssetImage('images/map_placeholder.jpg'), context);
   }
 
   @override
@@ -613,7 +613,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
                   height: 180,
                   width: double.infinity,
                   child: Image.asset(
-                    'assets/images/map_placeholder.jpg',
+                    'images/map_placeholder.jpg',
                     fit: BoxFit.cover,
                     cacheHeight: 360, // Optimize memory usage with cache size
                     errorBuilder: (context, error, stackTrace) {

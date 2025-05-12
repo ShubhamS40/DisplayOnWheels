@@ -3,36 +3,7 @@ import 'package:tsp/utils/theme_constants.dart';
 import 'package:tsp/screens/admin/company_documentsVerification/company_lists_not_verifiedDocuments.dart';
 import 'package:tsp/screens/admin/driver_documentsVerification/driver_lists_not_verifiedDocumnets.dart';
 import 'package:tsp/screens/company/company_recharge_plan/ad_recharge_plan_screen.dart';
-
-class PendingCompanyVerificationList extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Pending Company Verification'),
-        backgroundColor: ThemeConstants.primaryColor,
-      ),
-      body: Center(
-        child: Text('Company verification list will be displayed here'),
-      ),
-    );
-  }
-}
-
-class PendingDriverVerificationList extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Pending Driver Verification'),
-        backgroundColor: ThemeConstants.primaryColor,
-      ),
-      body: Center(
-        child: Text('Driver verification list will be displayed here'),
-      ),
-    );
-  }
-}
+import 'package:tsp/screens/admin/company_campaign_management/campaign_approval.dart';
 
 class AdminManagementScreen extends StatelessWidget {
   const AdminManagementScreen({Key? key}) : super(key: key);
@@ -122,9 +93,9 @@ class AdminManagementScreen extends StatelessWidget {
                   crossAxisCount: 3,
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
-                  childAspectRatio: 0.9,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
+                  childAspectRatio: 1,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
                   children: [
                     _buildQuickAction(
                       icon: Icons.campaign_outlined,
@@ -132,10 +103,24 @@ class AdminManagementScreen extends StatelessWidget {
                       color: Colors.green,
                       context: context,
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Viewing all campaigns'),
-                            backgroundColor: ThemeConstants.primaryColor,
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CampaignApprovalScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildQuickAction(
+                      icon: Icons.assignment_outlined,
+                      label: 'Campaign Management',
+                      color: Colors.orange,
+                      context: context,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CampaignApprovalScreen(),
                           ),
                         );
                       },

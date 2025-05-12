@@ -7,6 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// User roles and authentication
 model DriverRegistration {
   id                   String             @id @default(uuid())
   fullName             String
@@ -22,12 +23,16 @@ model DriverRegistration {
   passwordResetToken   String?            
   passwordResetExpires DateTime? 
 
-  otp                  String?            // 🔐 OTP for email verification
-  otpExpires           DateTime?          // 🕒 Expiration time for OTP
+  otp                  String?            // OTP for email verification
+  otpExpires           DateTime?          // Expiration time for OTP
   isEmailVerified      Boolean            @default(false)
+  isAvailable          Boolean            @default(true)  // Driver availability for campaigns
+  currentLocation      Json?              // {lat: number, lng: number}
+  walletBalance        Float              @default(0)    // Driver earnings
 
-  // 📄 Relation to documents
+  // Relations
   documents            DriverDocuments?
+  campaignDrivers      CampaignDriver[]   // Campaigns assigned to this driver
 }
 
 model DriverDocuments {
@@ -39,20 +44,20 @@ model DriverDocuments {
   vehicleImageUrl       String
   bankProofUrl          String
 
-  // 🏦 Bank Details
+  // Bank Details
   branchName            String
   bankName              String
   ifscCode              String
   accountNumber         String
 
-  // ✅ Document statuses
+  // Document statuses
   photoStatus           String   @default("PENDING") // APPROVED | REJECTED | PENDING
   idCardStatus          String   @default("PENDING")
   drivingLicenseStatus  String   @default("PENDING")
   vehicleImageStatus    String   @default("PENDING")
   bankProofStatus       String   @default("PENDING")
 
-  // ✅ Overall verification status and admin message
+  // Overall verification status and admin message
   verificationStatus    String   @default("PENDING") // APPROVED | REJECTED | PENDING
   adminMessage          String?  // Custom message from admin if rejected
 
@@ -62,6 +67,218 @@ model DriverDocuments {
   driver                DriverRegistration @relation(fields: [driverId], references: [id], onDelete: Cascade)
 }
 
+model CompanyRegistration {
+  id                   String             @id @default(uuid())
+  businessName         String
+  businessType         CompanyBusinessType
+  email                String             @unique
+  contactNumber        String
+  password             String
+  acceptedTerms        Boolean
+  isEmailVerified      Boolean            @default(false)
+  walletBalance        Float              @default(0)     // For refunds and credits
+
+  otp                  String?
+  otpExpires           DateTime?
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
+
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  documents            CompanyDocuments?
+  campaigns            Campaign[]         // Campaigns created by this company
+  payments             Payment[]          // Payments made by this company
+}
+
+model CompanyDocuments {
+  id                        String   @id @default(uuid())
+  companyId                 String   @unique
+
+  companyRegistrationUrl    String?
+  idCardUrl                 String?
+  gstNumberUrl              String?
+
+  // Company Details
+  companyName               String
+  companyType               CompanyType
+  companyAddress            String
+  companyCity               String
+  companyState              String
+  companyCountry            String
+  companyZipCode            String
+  
+  // Individual document statuses
+  companyRegistrationStatus String   @default("PENDING") // APPROVED | REJECTED | PENDING
+  idCardStatus              String   @default("PENDING")
+  gstNumberStatus           String   @default("PENDING")
+
+  // Overall verification status and admin message
+  verificationStatus        String   @default("PENDING") // APPROVED | REJECTED | PENDING
+  adminMessage              String?
+
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  company                   CompanyRegistration @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+// Admin model for managing the application
+model Admin {
+  id                   Int       @id @default(autoincrement())
+  name                 String
+  email                String    @unique
+  password             String
+  isEmailVerified      Boolean   @default(false)
+  otp                  String?    // for email verification OTP
+  otpExpires           DateTime? // expiry time for OTP
+  passwordResetToken   String?   // for password reset
+  passwordResetExpires DateTime? // expiry time for password reset token
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  
+  // Relations for admin actions
+  approvedCampaigns    Campaign[] @relation("CampaignApprover")
+}
+
+// Ad Campaign Management
+model Campaign {
+  id                   String          @id @default(uuid())
+  companyId            String
+  company              CompanyRegistration @relation(fields: [companyId], references: [id])
+  planId               Int
+  plan                 RechargePlan    @relation(fields: [planId], references: [id])
+  title                String
+  description          String?
+  startDate            DateTime?
+  endDate              DateTime?
+  targetLocation       String?
+  vehicleCount         Int             @default(1)
+  vehicleType          DriverVehicleType?
+  posterDesignNeeded   Boolean         @default(false)
+  posterDesignPrice    Float?
+  posterFile           String?         // URL to the poster file
+  posterSize           String?         // A3, A4, etc.
+  status               CampaignStatus  @default(PENDING_PAYMENT)
+  totalAmount          Float
+  approvalStatus       ApprovalStatus  @default(PENDING)
+  rejectionReason      String?
+  approvedById         Int?            // Admin ID who approved the campaign
+  approvedBy           Admin?          @relation("CampaignApprover", fields: [approvedById], references: [id])
+  approvedAt           DateTime?
+  
+  
+  // Relations
+  payments             Payment[]
+  campaignDrivers      CampaignDriver[]
+  proofSubmissions     ProofSubmission[]
+  
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+}
+
+model Payment {
+  id                   String          @id @default(uuid())
+  campaignId           String
+  campaign             Campaign        @relation(fields: [campaignId], references: [id])
+  companyId            String
+  company              CompanyRegistration @relation(fields: [companyId], references: [id])
+  amount               Float
+  status               PaymentStatus   @default(PENDING)
+  paymentMethod        String?
+  transactionId        String?
+  refunded             Boolean         @default(false)
+  refundReason         String?
+  refundedAt           DateTime?
+  refundedById         Int?            // Admin ID who processed the refund
+  paymentProof         String?         // URL to payment proof document
+  
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+}
+
+model CampaignDriver {
+  id                   String     @id @default(uuid())
+  campaignId           String
+  campaign             Campaign   @relation(fields: [campaignId], references: [id])
+  driverId             String
+  driver               DriverRegistration @relation(fields: [driverId], references: [id])
+  assignedById         Int        // Admin ID who assigned the driver
+  assignedAt           DateTime   @default(now())
+  status               DriverCampaignStatus @default(ASSIGNED)
+  lastLocation         Json?      // {lat: number, lng: number}
+  earnings             Float      @default(0)
+  completionDate       DateTime?
+  
+  // Driver feedback and rating
+  driverFeedback       String?
+  driverRating         Int?       // 1-5 star rating
+  
+  // Proof submissions through relation
+  proofSubmissions     ProofSubmission[]
+  
+  @@unique([campaignId, driverId])
+}
+
+// New model for proof submissions with detailed tracking
+model ProofSubmission {
+  id                   String     @id @default(uuid())
+  campaignId           String
+  campaign             Campaign   @relation(fields: [campaignId], references: [id])
+  campaignDriverId     String
+  campaignDriver       CampaignDriver @relation(fields: [campaignDriverId], references: [id])
+  imageUrl             String     // URL to proof image
+  location             Json?      // {lat: number, lng: number} where proof was taken
+  timestamp            DateTime   @default(now())
+  status               ProofStatus @default(PENDING)
+  adminFeedback        String?    // Admin feedback on the proof
+  rejectionReason      String?    // If rejected
+  
+  @@index([campaignId])
+  @@index([campaignDriverId])
+}
+
+model RechargePlan {
+  id                   Int        @id @default(autoincrement())
+  title                String
+  subtitle             String
+  note                 String?    // Additional description about the plan
+  price                Float
+  durationDays         Int
+  isRecommended        Boolean    @default(false)
+  isActive             Boolean    @default(true)  // Admin can deactivate plans
+  maxVehicles          Int?       // Maximum vehicles allowed in this plan
+  campaigns            Campaign[] // Assuming you have a Campaign model
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+  features             RechargePlanFeature[]  // Relation to features
+
+  @@index([isActive])  // Index for faster queries on active plans
+}
+
+model RechargePlanFeature {
+  id             Int       @id @default(autoincrement())
+  feature        String
+  rechargePlanId Int
+  rechargePlan   RechargePlan @relation(fields: [rechargePlanId], references: [id])
+}
+
+
+model Notification {
+  id                   String     @id @default(uuid())
+  userId               String     // The user who receives the notification
+  userType             UserType   // Type of user (ADMIN, COMPANY, DRIVER)
+  title                String
+  message              String
+  type                 NotificationType  // More specific notification types
+  relatedId            String?    // Related entity ID (campaign, payment, etc.)
+  isRead               Boolean    @default(false)
+  createdAt            DateTime   @default(now())
+  
+  @@index([userId, isRead]) // Index for faster notification queries
+}
+
+// Enhanced enums for better type safety
 enum DriverVehicleType {
   Hatchback
   SUV
@@ -78,65 +295,6 @@ enum DriverVehicleType {
   Other
 }
 
-
-
-model CompanyRegistration {
-  id                   String             @id @default(uuid())
-  businessName         String
-  businessType       CompanyBusinessType
-  email                String             @unique
-  contactNumber        String
-  password             String
-  acceptedTerms        Boolean
-  isEmailVerified      Boolean            @default(false)
-
-  otp                  String?
-  otpExpires           DateTime?
-  passwordResetToken   String?
-  passwordResetExpires DateTime?
-
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
-
-  documents            CompanyDocuments?
-}
-
-model CompanyDocuments {
-  id                        String   @id @default(uuid())
-  companyId                 String   @unique
-
-  companyRegistrationUrl    String?
-  idCardUrl                 String?
-  gstNumberUrl              String?
-
-  // Company Details
-  companyName               String
-  companyType               CompanyType
-  companyAddress            String
-  companyCity              String
-  companyState             String
-  companyCountry           String
-  companyZipCode           String
-  
- 
-
-  // 🗂 Individual document statuses
-  companyRegistrationStatus String   @default("PENDING") // APPROVED | REJECTED | PENDING
-  idCardStatus              String   @default("PENDING")
-  gstNumberStatus           String   @default("PENDING")
-
-
-  // ✅ Overall verification status and admin message
-  verificationStatus        String   @default("PENDING") // APPROVED | REJECTED | PENDING
-  adminMessage              String?
-
-  createdAt                 DateTime @default(now())
-  updatedAt                 DateTime @updatedAt
-
-  company                   CompanyRegistration @relation(fields: [companyId], references: [id], onDelete: Cascade)
-}
-
-
 enum CompanyType {
   Individual
   Partnership
@@ -147,6 +305,7 @@ enum CompanyType {
   Government_Agency
   Other
 }
+
 enum CompanyBusinessType {
   ECommerce
   Retail
@@ -162,18 +321,58 @@ enum CompanyBusinessType {
   Other
 }
 
+enum CampaignStatus {
+  PENDING_PAYMENT
+  PAYMENT_VERIFIED
+  PENDING_APPROVAL
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  REJECTED
+}
 
-// Admin model for managing the application
-model Admin {
-  id                   Int       @id @default(autoincrement())
-  name                 String
-  email                String    @unique
-  password             String
-  isEmailVerified      Boolean   @default(false)
-  otp                 String?    // for email verification OTP
-  otpExpires          DateTime? // expiry time for OTP
-  passwordResetToken  String?   // for password reset
-  passwordResetExpires DateTime? // expiry time for password reset token
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum DriverCampaignStatus {
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ProofStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum UserType {
+  ADMIN
+  COMPANY
+  DRIVER
+}
+
+enum NotificationType {
+  CAMPAIGN_CREATED
+  PAYMENT_RECEIVED
+  CAMPAIGN_APPROVED
+  CAMPAIGN_REJECTED
+  DRIVER_ASSIGNED
+  PROOF_SUBMITTED
+  PROOF_APPROVED
+  PROOF_REJECTED
+  REFUND_PROCESSED
+  CAMPAIGN_COMPLETED
+  GENERAL
 }

@@ -4,14 +4,16 @@ import 'package:tsp/screens/company/company_launch_ad_campain/components/theme_c
 
 class CarInputFields extends StatelessWidget {
   final TextEditingController carCountController;
-  final Function(int) onCarCountChanged;
+  final Function(String) onChanged;
   final int? selectedPlanPrice;
+  final Function(int) onCarCountChanged;
 
   const CarInputFields({
     Key? key,
     required this.carCountController,
-    required this.onCarCountChanged,
+    required this.onChanged,
     this.selectedPlanPrice,
+    required this.onCarCountChanged,
   }) : super(key: key);
 
   @override
@@ -32,12 +34,7 @@ class CarInputFields extends StatelessWidget {
             '',
             hintText: 'Enter the no of cars',
           ),
-          onChanged: (value) {
-            int? count = int.tryParse(value);
-            if (count != null) {
-              onCarCountChanged(count);
-            }
-          },
+          onChanged: onChanged,
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Please enter number of cars';

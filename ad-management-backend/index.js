@@ -9,6 +9,10 @@ const getPendingCompanies=require('./routes/Admin/CompanyDocumnets/comapnyDocume
 const companyAuth = require('./routes/Company/CompanyAuth/companyAuth'); // Adjust the path as needed
 const companyDocumentsUpload = require('./routes/Company/CompanyDocuments/companyDocuments'); // Adjust the path as needed
 const adminAuth = require('./routes/Admin/AdminAuth/adminAuth'); // Adjust the path as needed
+const manageRechargePlan = require('./routes/Admin/RechargePlan/adminRechargePlan'); // Adjust the path as needed
+const CompanyAddCampaign = require('./routes/Company/CompanyLaunchAddCampaign/companyLaunchAddCampaign'); // Adjust the path as needed
+const CompaignValidatePayment = require('./routes/Company/CompanyLaunchAddCampaign/campaignValidatePayment_&_Driver'); // Adjust the path as needed
+const driverCampaignManagement = require('./routes/Admin/DriverCampaignManagement/driverCampaignManagement'); // Adjust the path as needed
 
 // Middleware
 // Enable CORS for all routes and origins (for development)
@@ -38,7 +42,10 @@ app.use('/api/driver', require('./routes/Driver/DriverDocumentsUpload/driverDocu
 
 // Company All Routes
  app.use('/api/company', companyAuth); // Adjust the path as needed
+
+ app.use('/api/company-launch', CompanyAddCampaign) // Adjust the path as needed
  
+ app.use('/api/company-validate-payment', CompaignValidatePayment) // Adjust the path as needed
  // Use CompanyDocumentsUpload related routes
  app.use('/api/company-docs', companyDocumentsUpload); // Adjust the path as needed
 
@@ -53,13 +60,19 @@ app.use('/api/admin', adminAuth); // Adjust the path as needed
 
 
 
-
+// Admin Recharge Plan Routes Manage
+app.use('/api/admin-manage', manageRechargePlan); // Adjust the path as needed
 
 
 
 // Admin Verify Driver Pending Doucuments For Approval
 
 app.use('/api/admin',getPendingDrivers); // Adjust the path as needed
+
+
+
+//admin Driver Campaign Management
+app.use('/api/admin/driver-campaign-management', driverCampaignManagement ); // Adjust the path as needed
 
 app.get('/hi', (req, res) => {
   res.send('Welcome to the API!');

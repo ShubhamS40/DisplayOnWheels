@@ -114,7 +114,9 @@ class AdminOverviewScreen extends StatelessWidget {
               children: [
                 // Using a real map image
                 Image.network(
-                  'https://maps.googleapis.com/maps/api/staticmap?center=28.6139,77.2090&zoom=14&size=600x300&maptype=roadmap&markers=color:red|28.6139,77.2090&markers=color:green|28.6219,77.2190&markers=color:blue|28.6100,77.2090&key=YOUR_API_KEY',
+                  // Commented out Google Maps until API key is set
+                  // 'https://maps.googleapis.com/maps/api/staticmap?center=28.6139,77.2090&zoom=14&size=600x300&maptype=roadmap&markers=color:red|28.6139,77.2090&markers=color:green|28.6219,77.2190&markers=color:blue|28.6100,77.2090&key=YOUR_API_KEY',
+                  'https://via.placeholder.com/600x300/1a1a1a/FF5722?text=Team+TSP+Map+View',
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: double.infinity,

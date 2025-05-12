@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tsp/screens/company/company_launch_ad_campain/components/theme_constants.dart';
-import 'package:tsp/screens/company/company_launch_ad_campain/campaign_preview_screen.dart';
+import 'package:tsp/screens/company/company_launch_ad_campain/campaign_preview/campaign_preview_screen.dart';
 
 class PreviewButton extends StatelessWidget {
   final Map<String, dynamic> adDetails;
@@ -19,9 +19,7 @@ class PreviewButton extends StatelessWidget {
       width: double.infinity,
       child: ElevatedButton(
         style: AdCampaignTheme.blackButtonStyle,
-        onPressed: isFormValid 
-            ? () => _navigateToPreview(context)
-            : null,
+        onPressed: isFormValid ? () => _navigateToPreview(context) : null,
         child: const Text(
           "Preview Ad",
           style: TextStyle(

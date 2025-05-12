@@ -4,8 +4,9 @@ import 'package:tsp/screens/company/company_recharge_plan/ad_recharge_plan_scree
 
 class PlanSelectorButton extends StatelessWidget {
   final String? selectedPlan;
-  final Function(String, int) onPlanSelected;
-
+  final Function(String, int, Map<String, dynamic>?) onPlanSelected;
+  
+  // Enhanced constructor to handle detailed plan data
   const PlanSelectorButton({
     Key? key,
     this.selectedPlan,
@@ -37,10 +38,11 @@ class PlanSelectorButton extends StatelessWidget {
               );
 
               if (result != null && result is Map<String, dynamic>) {
-                // Process the selected plan data
+                // Process the selected plan data with detailed plan information
                 onPlanSelected(
                   result['planName'] ?? '',
                   result['price'] ?? 0,
+                  result['planDetails'],
                 );
               }
             },

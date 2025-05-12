@@ -19,10 +19,11 @@ const s3 = new S3Client({
 
 // Folder map
 const folderMap = {
-  companyRegistration: 'Company_Registration_Documents',
+  companyRegistrationDoc: 'Company_Registration_Documents',
   idCard: 'Company_ID_Card',
-  gstNumber: 'Company_GST_Documents',
+  gstNumberDoc: 'Company_GST_Documents',
 };
+
 
 const upload = multer({
   storage: multerS3({

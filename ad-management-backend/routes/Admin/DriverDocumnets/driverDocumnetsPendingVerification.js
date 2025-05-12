@@ -5,6 +5,7 @@ const { getPendingDrivers } = require('../../../controllers/Admin/DriverDocumnet
 const { verifyDriverDocuments } = require('../../../controllers/Admin/DriverDocumnetsVerification/verifyDriverDocuments.controller');
 const { viewDriverDocuments } = require('../../../controllers/Admin/DriverDocumnetsVerification/viewDriverDocuments.controller');
 
+
 // Route: GET /admin/pending-drivers-documents for verification
 router.get('/pending-drivers-documents', getPendingDrivers);
 
