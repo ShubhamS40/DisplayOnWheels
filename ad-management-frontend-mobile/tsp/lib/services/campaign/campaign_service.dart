@@ -10,6 +10,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as path;
 import 'package:tsp/utils/constants.dart';
 import 'package:dio/dio.dart' as dio;
+import 'package:intl/intl.dart';
 
 // Import the constants from the constants file
 import 'package:tsp/utils/constants.dart' as app_constants;
@@ -30,6 +31,147 @@ class CampaignService {
   static final CampaignService _instance = CampaignService._internal();
   factory CampaignService() => _instance;
   CampaignService._internal();
+
+  // Fetch company campaigns from dashboard API
+  Future<Map<String, dynamic>> fetchCompanyCampaigns() async {
+    try {
+      // Get auth info
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final companyId = prefs.getString('companyId');
+
+      if (token == null || companyId == null) {
+        debugPrint('Authentication or Company ID not found');
+        return {
+          'success': false,
+          'message': 'Authentication or Company ID not found',
+          'campaigns': []
+        };
+      }
+
+      // Fetch campaigns from the API
+      final apiUrl =
+          '${Constants.baseUrl}/api/company-dashboard/company/$companyId/campaigns';
+
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      debugPrint('Response status: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> responseData = jsonDecode(response.body);
+
+        // Process campaigns by status
+        final List<Map<String, dynamic>> activeCampaigns = [];
+        final List<Map<String, dynamic>> pendingCampaigns = [];
+        final List<Map<String, dynamic>> completedCampaigns = [];
+
+        final now = DateTime.now();
+
+        for (var campaign in responseData) {
+          // Convert campaign to consistent format with required fields
+          final Map<String, dynamic> formattedCampaign = {
+            'id': campaign['id'] ?? '',
+            'name': campaign['name'] ?? '',
+            'description': campaign['description'] ?? '',
+            'startDate': campaign['startDate'],
+            'endDate': campaign['endDate'],
+            'posterUrl': _normalizePosterUrl(campaign['posterUrl'] ?? ''),
+            'approvalStatus': campaign['approvalStatus'] ?? 'PENDING',
+            'carsCount': campaign['carsCount'] ?? 0,
+            'state': 'N/A', // Default
+            'validity': 0, // Will be calculated
+            'planName': campaign['planName'] ?? '',
+          };
+
+          // Calculate remaining days if dates are available
+          if (campaign['startDate'] != null && campaign['endDate'] != null) {
+            try {
+              // Try to parse dates if they're not null
+              DateTime? startDate;
+              DateTime? endDate;
+
+              if (campaign['startDate'] is String) {
+                startDate = DateTime.tryParse(campaign['startDate']);
+              }
+
+              if (campaign['endDate'] is String) {
+                endDate = DateTime.tryParse(campaign['endDate']);
+              }
+
+              if (startDate != null && endDate != null) {
+                // Calculate validity in days
+                final difference = endDate.difference(now).inDays;
+                formattedCampaign['validity'] = difference > 0 ? difference : 0;
+
+                // Format dates for display
+                final dateFormat = DateFormat('dd/MM/yyyy');
+                formattedCampaign['startDate'] = dateFormat.format(startDate);
+                formattedCampaign['endDate'] = dateFormat.format(endDate);
+              }
+            } catch (e) {
+              debugPrint('Error parsing dates: $e');
+            }
+          }
+
+          // Add campaign to appropriate list based on status
+          if (formattedCampaign['approvalStatus'] == 'APPROVED') {
+            activeCampaigns.add(formattedCampaign);
+          } else if (formattedCampaign['approvalStatus'] == 'PENDING') {
+            pendingCampaigns.add(formattedCampaign);
+          } else {
+            completedCampaigns.add(formattedCampaign);
+          }
+        }
+
+        return {
+          'success': true,
+          'message': 'Campaigns fetched successfully',
+          'activeCampaigns': activeCampaigns,
+          'pendingCampaigns': pendingCampaigns,
+          'completedCampaigns': completedCampaigns,
+        };
+      } else {
+        // Handle error response
+        String errorMsg = 'Failed to fetch campaigns';
+
+        try {
+          final responseData = jsonDecode(response.body);
+          if (responseData is Map) {
+            errorMsg =
+                responseData['message'] ?? responseData['error'] ?? errorMsg;
+          }
+        } catch (e) {
+          errorMsg = 'Server error: HTTP ${response.statusCode}';
+        }
+
+        debugPrint('Failed to fetch campaigns: $errorMsg');
+        return {
+          'success': false,
+          'message': errorMsg,
+          'activeCampaigns': [],
+          'pendingCampaigns': [],
+          'completedCampaigns': [],
+        };
+      }
+    } catch (e) {
+      // Provide detailed error diagnostics
+      debugPrint('Error fetching campaigns: $e');
+      return {
+        'success': false,
+        'message': 'Error: $e',
+        'activeCampaigns': [],
+        'pendingCampaigns': [],
+        'completedCampaigns': [],
+      };
+    }
+  }
 
   // Create campaign using HTTP directly to match Postman exactly
   Future<Map<String, dynamic>> launchCampaign({
@@ -55,7 +197,7 @@ class CampaignService {
       // Always ensure we have a valid plan ID (minimum 1)
       final dynamic rawPlanId = campaignData['planId'];
       final int planId;
-      
+
       if (rawPlanId != null) {
         // Convert to int if it's a string
         if (rawPlanId is String) {
@@ -67,7 +209,7 @@ class CampaignService {
         // Use fallback logic
         planId = _extractPlanId(campaignData['selectedPlan']) ?? 4;
       }
-      
+
       // Always default to plan ID 4 if plan is not valid
       final validPlanId = (planId < 1 || planId > 10) ? 4 : planId;
       debugPrint('Using plan ID: $validPlanId');
@@ -168,6 +310,9 @@ class CampaignService {
       // Handling success
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
+        if (responseData is Map && responseData.containsKey('posterUrl')) {
+          responseData['posterUrl'] = _normalizePosterUrl(responseData['posterUrl'] ?? '');
+        }
         debugPrint('Campaign created successfully: $responseData');
         return {
           'success': true,
@@ -246,7 +391,21 @@ class CampaignService {
     }
   }
 
-  int _extractPlanId(String? planName) {
+  // Helper method to normalize poster URLs by removing localhost prefix
+  String _normalizePosterUrl(String url) {
+    // Remove the localhost prefix if present
+    if (url.contains('http://localhost:5000/uploads/posters/')) {
+      // Extract just the filename part
+      final filename = url.split('/').last;
+      // If we have a valid S3 URL in the system, use that format
+      if (filename.isNotEmpty) {
+        return 'https://displayonwheel.s3.ap-south-1.amazonaws.com/campaigns/posters/$filename';
+      }
+    }
+    return url;
+  }
+
+  int? _extractPlanId(String? planName) {
     if (planName == null) return 4; // Default to plan ID 4 if null
     switch (planName.toLowerCase()) {
       case 'basic':
@@ -273,7 +432,7 @@ class CampaignService {
 
       final response = await http.get(
         Uri.parse(
-            '${app_constants.Constants.baseUrl}/api/campaigns/company/$companyId'),
+            '${app_constants.Constants.baseUrl}/api/company-dashboard/company/$companyId/campaigns'),
         headers: {
           'Authorization': 'Bearer $token',
         },

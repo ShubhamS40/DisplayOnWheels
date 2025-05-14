@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../campaign_details/campaign_detail_screen.dart';
 
 class CampaignOverviewCard extends StatelessWidget {
   final TabController tabController;
@@ -91,17 +92,72 @@ class CampaignOverviewCard extends StatelessWidget {
       separatorBuilder: (context, index) => Divider(color: dividerColor),
       itemBuilder: (context, index) {
         final campaign = campaigns[index];
+        
+        // Determine valid days text
+        String validityText = '';
+        if (campaign['startDate'] != null && campaign['endDate'] != null) {
+          if (campaign['validity'] != null) {
+            validityText = 'Validity: ${campaign['validity']} days left';
+          } else {
+            validityText = '${campaign['startDate']} - ${campaign['endDate']}';
+          }
+        } else {
+          validityText = 'Dates pending';
+        }
+        
+        // Determine plan name subtitle
+        String planName = campaign['planName'] ?? '';
+        String subtitle = validityText;
+        if (planName.isNotEmpty) {
+          subtitle = '$planName • $validityText';
+        }
+        
+        // Determine status icon/color
+        IconData statusIcon;
+        Color statusColor;
+        
+        final status = campaign['approvalStatus'] ?? 'PENDING';
+        switch (status) {
+          case 'APPROVED':
+            statusIcon = Icons.check_circle;
+            statusColor = Colors.green;
+            break;
+          case 'PENDING':
+            statusIcon = Icons.pending;
+            statusColor = Colors.orange;
+            break;
+          case 'REJECTED':
+            statusIcon = Icons.cancel;
+            statusColor = Colors.red;
+            break;
+          default:
+            statusIcon = Icons.help;
+            statusColor = Colors.grey;
+        }
+        
         return ListTile(
           contentPadding: EdgeInsets.zero,
-          title: Text(
-            campaign['name'],
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: textColor,
-            ),
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  campaign['name'] ?? 'Unnamed Campaign',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Icon(
+                statusIcon,
+                size: 16,
+                color: statusColor,
+              ),
+            ],
           ),
           subtitle: Text(
-            'Validity: ${campaign['validity']} days left',
+            subtitle,
             style: TextStyle(
               color: textColor.withOpacity(0.7),
             ),
@@ -112,7 +168,14 @@ class CampaignOverviewCard extends StatelessWidget {
             color: Color(0xFFFF5722),
           ),
           onTap: () {
-            // Navigate to campaign details
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CampaignDetailScreen(
+                  campaign: campaign,
+                ),
+              ),
+            );
           },
         );
       },

@@ -73,6 +73,11 @@ class _DriverAssignmentState extends State<DriverAssignment> {
           _successMessage = 'Drivers assigned successfully';
           _selectedDriverIds = [];
           
+          // Show info about campaign approval if not yet approved
+          if (widget.campaign['approvalStatus'] != 'APPROVED') {
+            _successMessage = 'Drivers assigned successfully. Remember to approve the campaign when ready.';
+          }
+          
           // Wait a moment before triggering the callback
           Future.delayed(const Duration(seconds: 1), () {
             if (mounted) {
@@ -134,7 +139,7 @@ class _DriverAssignmentState extends State<DriverAssignment> {
           ),
         ),
         
-        // Status message
+        // Status message for campaign approval state
         if (!isApproved)
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -146,11 +151,11 @@ class _DriverAssignmentState extends State<DriverAssignment> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                const Icon(Icons.info_outline, color: Colors.orange),
                 const SizedBox(width: 8.0),
                 Expanded(
                   child: Text(
-                    'Campaign must be approved before drivers can be assigned',
+                    'You can assign drivers now. The campaign will be approved separately.',
                     style: TextStyle(color: Colors.orange[800]),
                   ),
                 ),
@@ -248,7 +253,7 @@ class _DriverAssignmentState extends State<DriverAssignment> {
                         ),
                       ),
                       child: InkWell(
-                        onTap: isApproved ? () => _toggleDriverSelection(driverId) : null,
+                        onTap: () => _toggleDriverSelection(driverId),
                         borderRadius: BorderRadius.circular(8.0),
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
@@ -353,9 +358,7 @@ class _DriverAssignmentState extends State<DriverAssignment> {
                               // Selection checkbox
                               Checkbox(
                                 value: isSelected,
-                                onChanged: isApproved
-                                    ? (value) => _toggleDriverSelection(driverId)
-                                    : null,
+                                onChanged: (value) => _toggleDriverSelection(driverId),
                                 activeColor: const Color(0xFFFF5722),
                               ),
                             ],
@@ -383,7 +386,7 @@ class _DriverAssignmentState extends State<DriverAssignment> {
               ),
               const Spacer(),
               ElevatedButton(
-                onPressed: (isApproved && !_isAssigning && _selectedDriverIds.isNotEmpty)
+                onPressed: (!_isAssigning && _selectedDriverIds.isNotEmpty)
                     ? _assignDrivers
                     : null,
                 style: ElevatedButton.styleFrom(

@@ -4,6 +4,7 @@ import 'package:tsp/screens/company/company_dashboard/components/campaign_detail
 import 'package:tsp/screens/company/company_dashboard/components/live_campaign_map.dart';
 import 'package:tsp/screens/company/company_dashboard/components/subscription_plan_card.dart';
 import 'package:tsp/screens/company/company_launch_ad_campain/ad_campaign_screen.dart';
+import 'package:tsp/services/campaign/campaign_service.dart';
 
 class CompanyDashboardScreen extends StatefulWidget {
   const CompanyDashboardScreen({Key? key}) : super(key: key);
@@ -18,44 +19,14 @@ class _CompanyDashboardScreenState extends State<CompanyDashboardScreen> with Si
   bool isLoading = true;
   String errorMessage = '';
   
-  // Mock data for demonstration
-  final Map<String, dynamic> campaignData = {
-    'activeCampaigns': [
-      {
-        'id': 'abc123',
-        'name': 'Campaign A',
-        'validity': 10,
-        'startDate': '15/06/2023',
-        'endDate': '20/06/2023',
-        'state': 'Delhi',
-        'carsCount': 10,
-      },
-    ],
-    'pendingCampaigns': [
-      {
-        'id': 'def456',
-        'name': 'Campaign B',
-        'validity': 10,
-        'startDate': '25/06/2023',
-        'endDate': '30/06/2023',
-        'state': 'Mumbai',
-        'carsCount': 5,
-      },
-    ],
-    'completedCampaigns': [
-      {
-        'id': 'ghi789',
-        'name': 'Campaign C',
-        'validity': 15,
-        'startDate': '01/05/2023',
-        'endDate': '15/05/2023',
-        'state': 'Bangalore',
-        'carsCount': 8,
-      },
-    ],
+  // Campaign data from API
+  Map<String, dynamic> campaignData = {
+    'activeCampaigns': [],
+    'pendingCampaigns': [],
+    'completedCampaigns': [],
   };
   
-  // Mock subscription plan data
+  // Subscription plan data
   final Map<String, dynamic> subscriptionData = {
     'currentPlan': 'Premium',
     'expiryDate': '24/09/2023',
@@ -78,15 +49,31 @@ class _CompanyDashboardScreenState extends State<CompanyDashboardScreen> with Si
   Future<void> _fetchDashboardData() async {
     setState(() {
       isLoading = true;
+      errorMessage = '';
     });
     
-    // Simulate API call delay
-    await Future.delayed(const Duration(seconds: 1));
-    
-    // In a real app, fetch data from API here
-    setState(() {
-      isLoading = false;
-    });
+    try {
+      // Fetch campaign data from the API
+      final result = await CampaignService().fetchCompanyCampaigns();
+      
+      setState(() {
+        if (result['success']) {
+          campaignData = {
+            'activeCampaigns': result['activeCampaigns'],
+            'pendingCampaigns': result['pendingCampaigns'],
+            'completedCampaigns': result['completedCampaigns'],
+          };
+        } else {
+          errorMessage = result['message'] ?? 'Failed to fetch campaign data';
+        }
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Error: $e';
+        isLoading = false;
+      });
+    }
   }
 
   Future<void> _refreshDashboard() async {

@@ -19,6 +19,7 @@ class CampaignDetail extends StatefulWidget {
 class _CampaignDetailState extends State<CampaignDetail> {
   final AdminCampaignService _adminCampaignService = AdminCampaignService();
   bool _isLoading = false;
+  bool _isDeleting = false;
   String? _errorMessage;
   String? _successMessage;
   
@@ -28,6 +29,9 @@ class _CampaignDetailState extends State<CampaignDetail> {
   
   // Rejection reason
   final TextEditingController _rejectionReasonController = TextEditingController();
+  
+  // Deletion confirmation
+  final TextEditingController _deleteConfirmController = TextEditingController();
   
   @override
   void initState() {
@@ -112,6 +116,104 @@ class _CampaignDetailState extends State<CampaignDetail> {
     }
   }
   
+  Future<void> _deleteCampaign() async {
+    // First set the deleting state
+    setState(() {
+      _isDeleting = true;
+      _errorMessage = null;
+      _successMessage = null;
+    });
+    
+    try {
+      // Call the delete API
+      final result = await _adminCampaignService.deleteCampaign(
+        widget.campaign['id'],
+      );
+      
+      if (mounted) {
+        setState(() {
+          _isDeleting = false;
+          
+          if (result['success']) {
+            _successMessage = 'Campaign deleted successfully';
+            // Wait a moment before triggering the callback
+            Future.delayed(const Duration(seconds: 1), () {
+              if (mounted) {
+                widget.onActionComplete();
+              }
+            });
+          } else {
+            _errorMessage = result['message'];
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isDeleting = false;
+          _errorMessage = 'An error occurred: $e';
+        });
+      }
+    }
+  }
+  
+  void _showDeleteConfirmation() {
+    // Reset the confirmation field
+    _deleteConfirmController.text = '';
+    
+    // Show a dialog to confirm deletion
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Campaign?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'This action cannot be undone. The campaign will be permanently deleted.',
+              style: TextStyle(color: Colors.red),
+            ),
+            const SizedBox(height: 16),
+            const Text('Type "DELETE" to confirm:'),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _deleteConfirmController,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: 'DELETE',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (_deleteConfirmController.text == 'DELETE') {
+                Navigator.pop(context);
+                _deleteCampaign();
+              } else {
+                // Show error that confirmation text is incorrect
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please type "DELETE" to confirm'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _rejectCampaign() async {
     if (_rejectionReasonController.text.trim().isEmpty) {
       setState(() {
@@ -625,6 +727,63 @@ class _CampaignDetailState extends State<CampaignDetail> {
                 ],
               ),
             ),
+          
+          const SizedBox(height: 32.0),
+          
+          // Campaign Deletion Section
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(12.0),
+              border: Border.all(color: Colors.grey[300] ?? Colors.grey),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Delete Campaign',
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red,
+                  ),
+                ),
+                const SizedBox(height: 12.0),
+                const Text(
+                  'Warning: This action cannot be undone. The campaign will be permanently deleted from the system.',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 14.0,
+                  ),
+                ),
+                const SizedBox(height: 16.0),
+                
+                // Delete button
+                ElevatedButton(
+                  onPressed: _isLoading || _isDeleting ? null : _showDeleteConfirmation,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 44.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  child: _isDeleting
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.0,
+                        ),
+                      )
+                    : const Text('Delete Campaign'),
+                ),
+              ],
+            ),
+          ),
           
           const SizedBox(height: 32.0),
         ],

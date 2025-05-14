@@ -159,17 +159,23 @@ exports.getCampaignById = asyncHandler(async (req, res) => {
 // Update Campaign (only editable fields before approval)
 exports.updateCampaign = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  
-  // Prevent updating certain fields after approval
+
   const existingCampaign = await prisma.campaign.findUnique({ where: { id } });
   if (existingCampaign.approvalStatus !== 'PENDING') {
     res.status(400);
     throw new Error('Cannot update campaign after approval/rejection');
   }
 
+  // ✅ Only pick startDate and endDate if present
+  const { startDate, endDate } = req.body;
+  const updateData = {};
+
+  if (startDate) updateData.startDate = new Date(startDate);
+  if (endDate) updateData.endDate = new Date(endDate);
+
   const updated = await prisma.campaign.update({
     where: { id },
-    data: req.body
+    data: updateData
   });
 
   res.json({ success: true, data: updated });
@@ -178,9 +184,36 @@ exports.updateCampaign = asyncHandler(async (req, res) => {
 // Delete Campaign
 exports.deleteCampaign = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  await prisma.campaign.delete({ where: { id } });
+
+  // Step 1: Get all driver IDs associated with this campaign
+  const campaignDrivers = await prisma.campaignDriver.findMany({
+    where: { campaignId: id },
+    select: { driverId: true }
+  });
+
+  const driverIds = campaignDrivers.map(cd => cd.driverId);
+
+  // Step 2: Set isAvailable = true for those drivers
+  if (driverIds.length > 0) {
+    await prisma.driverRegistration.updateMany({
+      where: { id: { in: driverIds } },
+      data: { isAvailable: true }
+    });
+  }
+
+  // Step 3: Delete campaignDriver records (if not using ON DELETE CASCADE)
+  await prisma.campaignDriver.deleteMany({
+    where: { campaignId: id }
+  });
+
+  // Step 4: Delete the campaign
+  await prisma.campaign.delete({
+    where: { id }
+  });
+
   res.status(204).send();
 });
+
 
 // Admin Approves Campaign
 exports.approveCampaign = asyncHandler(async (req, res) => {

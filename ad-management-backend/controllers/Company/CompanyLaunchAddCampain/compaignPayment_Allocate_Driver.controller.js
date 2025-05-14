@@ -51,9 +51,15 @@ const assignDriversToCampaign = async (req, res) => {
   const campaignId = req.params.id;
 
   try {
-    const campaign = await prisma.campaign.findUnique({ where: { id: campaignId } });
-    if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
+    // Check if campaign exists
+    const campaign = await prisma.campaign.findUnique({
+      where: { id: campaignId }
+    });
+    if (!campaign) {
+      return res.status(404).json({ error: 'Campaign not found' });
+    }
 
+    // Assign drivers to the campaign
     const assignments = await Promise.all(
       driverIds.map(driverId =>
         prisma.campaignDriver.upsert({
@@ -76,12 +82,27 @@ const assignDriversToCampaign = async (req, res) => {
       )
     );
 
-    res.json({ success: true, message: 'Drivers assigned successfully', assignedDrivers: assignments });
+    // Mark assigned drivers as unavailable
+    await prisma.driverRegistration.updateMany({
+      where: {
+        id: { in: driverIds }
+      },
+      data: {
+        isAvailable: false
+      }
+    });
+
+    res.json({
+      success: true,
+      message: 'Drivers assigned successfully',
+      assignedDrivers: assignments
+    });
   } catch (err) {
-    console.error(err);
+    console.error('Error assigning drivers to campaign:', err);
     res.status(500).json({ error: 'Driver assignment failed' });
   }
 };
+
 
 // campaign.controller.js
 const getCampaignWithDrivers = async (req, res) => {

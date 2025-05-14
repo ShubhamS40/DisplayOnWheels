@@ -13,7 +13,7 @@ const manageRechargePlan = require('./routes/Admin/RechargePlan/adminRechargePla
 const CompanyAddCampaign = require('./routes/Company/CompanyLaunchAddCampaign/companyLaunchAddCampaign'); // Adjust the path as needed
 const CompaignValidatePayment = require('./routes/Company/CompanyLaunchAddCampaign/campaignValidatePayment_&_Driver'); // Adjust the path as needed
 const driverCampaignManagement = require('./routes/Admin/DriverCampaignManagement/driverCampaignManagement'); // Adjust the path as needed
-
+const ComapnyDashboard=require('./routes/Company/CompanyDashboard/campaign-driver-details'); // Adjust the path as needed
 // Middleware
 // Enable CORS for all routes and origins (for development)
 app.use(cors({
@@ -48,6 +48,12 @@ app.use('/api/driver', require('./routes/Driver/DriverDocumentsUpload/driverDocu
  app.use('/api/company-validate-payment', CompaignValidatePayment) // Adjust the path as needed
  // Use CompanyDocumentsUpload related routes
  app.use('/api/company-docs', companyDocumentsUpload); // Adjust the path as needed
+
+
+// CompanyDashobard all company and comapign or Driver Details Route
+
+app.use('/api/company-dashboard',ComapnyDashboard)
+
 
 
 // Admin Verify Company Pending Doucuments For Approval

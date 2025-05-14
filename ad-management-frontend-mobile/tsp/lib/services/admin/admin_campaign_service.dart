@@ -136,21 +136,21 @@ class AdminCampaignService {
       final startDate = data['startDate'] is DateTime
           ? data['startDate'] as DateTime
           : DateTime.parse(data['startDate'].toString());
-          
+
       // Format to ensure proper ISO 8601 format with Z suffix
-      data['startDate'] = startDate.toUtc().toIso8601String();
+      data['startDate ,enddate'] = startDate.toUtc().toIso8601String();
     }
-    
+
     if (data.containsKey('endDate') && data['endDate'] != null) {
       // Parse the date string if it's not already a DateTime
       final endDate = data['endDate'] is DateTime
           ? data['endDate'] as DateTime
           : DateTime.parse(data['endDate'].toString());
-          
+
       // Format to ensure proper ISO 8601 format with Z suffix
       data['endDate'] = endDate.toUtc().toIso8601String();
     }
-    
+
     debugPrint('Formatted data for update: $data');
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -170,7 +170,8 @@ class AdminCampaignService {
         body: jsonEncode(data),
       );
 
-      debugPrint('Update campaign response: ${response.statusCode} - ${response.body}');
+      debugPrint(
+          'Update campaign response: ${response.statusCode} - ${response.body}');
 
       if (response.statusCode == 200) {
         try {
@@ -198,7 +199,7 @@ class AdminCampaignService {
               'message': 'Server error: Received HTML response'
             };
           }
-          
+
           final responseData = jsonDecode(response.body);
           return {
             'success': false,
@@ -232,7 +233,7 @@ class AdminCampaignService {
 
       // Ensure the adminId is a number as shown in the API
       final adminIdValue = int.tryParse(adminId) ?? 1;
-      
+
       // Use the validated payment endpoint as shown in Postman
       final response = await http.post(
         Uri.parse(
@@ -241,17 +242,20 @@ class AdminCampaignService {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({
-          'driverIds': driverIds,
-          'assignedById': adminIdValue
-        }),
+        body:
+            jsonEncode({'driverIds': driverIds, 'assignedById': adminIdValue}),
       );
-      
-      debugPrint('Driver assignment request: ${Uri.parse('${Constants.baseUrl}/api/company-validate-payment/campaign/$campaignId/assign-drivers')}');
-      debugPrint('Driver assignment body: ${jsonEncode({'driverIds': driverIds, 'assignedById': adminIdValue})}');
 
-      debugPrint('Assign drivers response: ${response.statusCode} - ${response.body}');
-      
+      debugPrint(
+          'Driver assignment request: ${Uri.parse('${Constants.baseUrl}/api/company-validate-payment/campaign/$campaignId/assign-drivers')}');
+      debugPrint('Driver assignment body: ${jsonEncode({
+            'driverIds': driverIds,
+            'assignedById': adminIdValue
+          })}');
+
+      debugPrint(
+          'Assign drivers response: ${response.statusCode} - ${response.body}');
+
       if (response.statusCode == 200) {
         try {
           final data = jsonDecode(response.body);
@@ -278,7 +282,7 @@ class AdminCampaignService {
               'message': 'Server error: Received HTML response'
             };
           }
-          
+
           final data = jsonDecode(response.body);
           return {
             'success': false,
@@ -299,6 +303,53 @@ class AdminCampaignService {
   }
 
   // Get available drivers for assignment
+  // Delete a campaign
+  Future<Map<String, dynamic>> deleteCampaign(String campaignId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final adminId = prefs.getString('adminId');
+
+      if (token == null || adminId == null) {
+        return {'success': false, 'message': 'Admin authentication required'};
+      }
+
+      final response = await http.delete(
+        Uri.parse('${Constants.baseUrl}/api/company-launch/$campaignId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      debugPrint('Delete campaign response: ${response.statusCode} - ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        return {
+          'success': true,
+          'message': 'Campaign deleted successfully',
+        };
+      } else {
+        String errorMessage = 'Failed to delete campaign';
+        try {
+          final data = jsonDecode(response.body);
+          errorMessage = data['message'] ?? errorMessage;
+        } catch (e) {
+          // If JSON parsing fails, use the status code
+          errorMessage = 'Server error: ${response.statusCode}';
+        }
+        
+        return {
+          'success': false,
+          'message': errorMessage
+        };
+      }
+    } catch (e) {
+      debugPrint('Error deleting campaign: $e');
+      return {'success': false, 'message': 'An error occurred: $e'};
+    }
+  }
+
   Future<List<dynamic>> getAvailableDrivers() async {
     try {
       // Get auth info
