@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:tsp/screens/company/company_dashboard/company_dashboard_screen.dart';
 import 'package:tsp/screens/company/company_document/company_upload_documents.dart';
 import 'package:tsp/screens/company/company_document/company_reupload_document.dart';
 import 'package:tsp/screens/company/company_recharge_plan/ad_recharge_plan_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:tsp/screens/driver/driver_dashboard.dart';
+import 'package:tsp/screens/driver/driver_dashboard/driver_dashboard.dart';
 
 class CompanyDocumentStatusScreen extends StatefulWidget {
   const CompanyDocumentStatusScreen({Key? key}) : super(key: key);
@@ -583,7 +584,7 @@ class _CompanyDocumentStatusScreenState
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => DriverDashboard(),
+        builder: (context) => CompanyDashboardScreen(),
       ),
     );
   }

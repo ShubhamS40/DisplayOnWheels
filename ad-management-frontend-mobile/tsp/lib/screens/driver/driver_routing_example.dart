@@ -51,12 +51,7 @@ class DriverRoutingExample extends StatelessWidget {
               },
               child: const Text('Go to About Company'),
             ),
-            ElevatedButton(
-              onPressed: () {
-                DriverNavigation.navigateToUploadProof(context);
-              },
-              child: const Text('Go to Upload Ad Proof'),
-            ),
+
             ElevatedButton(
               onPressed: () {
                 DriverNavigation.navigateToLiveLocation(context);

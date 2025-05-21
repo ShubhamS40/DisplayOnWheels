@@ -1,21 +1,26 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tsp/provider/providers.dart';
 import 'package:tsp/screens/driver/driver_document/documentUpload.dart';
 import 'package:tsp/screens/driver/driver_document/documentVerification_Stage.dart';
-import 'package:tsp/screens/driver/driver_dashboard.dart';
+import 'package:tsp/utils/constants.dart';
+
 import 'package:tsp/screens/driver/driver_main_screen.dart';
 import 'package:tsp/screens/driver/driver_auth/driver_signup.dart';
 import 'package:tsp/screens/driver/driver_auth/forgot_password.dart';
 
-class DriverLoginScreen extends StatefulWidget {
+class DriverLoginScreen extends ConsumerStatefulWidget {
+  const DriverLoginScreen({Key? key}) : super(key: key);
+
   @override
-  _DriverLoginScreenState createState() => _DriverLoginScreenState();
+  ConsumerState<DriverLoginScreen> createState() => _DriverLoginScreenState();
 }
 
-class _DriverLoginScreenState extends State<DriverLoginScreen> {
+class _DriverLoginScreenState extends ConsumerState<DriverLoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController emailPhoneController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -30,7 +35,7 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
     final email = emailPhoneController.text.trim();
     final password = passwordController.text.trim();
 
-    final url = Uri.parse('http://localhost:5000/api/driver/login');
+    final url = Uri.parse('${Constants.baseUrl}/api/driver/login');
 
     try {
       final response = await http.post(
@@ -55,6 +60,7 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('driverId', driverId);
         await prefs.setString('token', token);
+        ref.read(driverIdProvider.notifier).state = driverId;
 
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
@@ -87,7 +93,7 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
       // First check if the driver has submitted documents
       final docsSubmittedResponse = await http.get(
         Uri.parse(
-            'http://localhost:5000/api/driver/has-submitted-documents/$driverId'),
+            '${Constants.baseUrl}/api/driver/has-submitted-documents/$driverId'),
         headers: {"Content-Type": "application/json"},
       );
 
@@ -110,7 +116,7 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
 
       // If documents have been submitted, check verification status
       final docStatusResponse = await http.get(
-        Uri.parse('http://localhost:5000/api/driver/document-status/$driverId'),
+        Uri.parse('${Constants.baseUrl}/api/driver/document-status/$driverId'),
         headers: {"Content-Type": "application/json"},
       );
 
@@ -140,7 +146,7 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
           // All documents approved - navigate directly to driver dashboard
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => DriverDashboard()),
+            MaterialPageRoute(builder: (context) => DriverMainScreen()),
           );
         } else {
           // Documents pending or rejected - show document status screen

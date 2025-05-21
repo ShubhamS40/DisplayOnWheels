@@ -14,6 +14,10 @@ const CompanyAddCampaign = require('./routes/Company/CompanyLaunchAddCampaign/co
 const CompaignValidatePayment = require('./routes/Company/CompanyLaunchAddCampaign/campaignValidatePayment_&_Driver'); // Adjust the path as needed
 const driverCampaignManagement = require('./routes/Admin/DriverCampaignManagement/driverCampaignManagement'); // Adjust the path as needed
 const ComapnyDashboard=require('./routes/Company/CompanyDashboard/campaign-driver-details'); // Adjust the path as needed
+const DriverDashboard=require('./routes/Driver/DriverDashboard/comapnyCampaignDetail'); // Adjust the path as needed
+const DriverUploadAdvertisementProof = require('./routes/Driver/DriverUploadAdvertisementProof/uploadAdvertisementProofPhoto'); // Adjust the path as needed
+const CampaignDriverAdvertisementVerification= require('./routes/Admin/CampaignDriverVerification/driverAdvertisementProofVerification'); // Adjust the path as needed
+
 // Middleware
 // Enable CORS for all routes and origins (for development)
 app.use(cors({
@@ -36,6 +40,10 @@ app.use('/api/driver-docs', driverDocumentsUpload); // Adjust the path as needed
 // Make sure this is in your index.js or wherever you configure routes
 app.use('/api/driver', require('./routes/Driver/DriverDocumentsUpload/driverDocumentsUpload'));
 
+
+app.use('/api/driver-dashboard', DriverDashboard); // Adjust the path as needed
+
+app.use('/api/driver-campaign', DriverUploadAdvertisementProof); 
 // Define your other routes and middlewares here
 
 
@@ -79,6 +87,10 @@ app.use('/api/admin',getPendingDrivers); // Adjust the path as needed
 
 //admin Driver Campaign Management
 app.use('/api/admin/driver-campaign-management', driverCampaignManagement ); // Adjust the path as needed
+
+
+// Admin Campaign Driver Verification
+app.use('/api/admin/campaign-driver-verification',CampaignDriverAdvertisementVerification); // Adjust the path as needed
 
 app.get('/hi', (req, res) => {
   res.send('Welcome to the API!');

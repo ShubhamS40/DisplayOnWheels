@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:tsp/screens/driver/driver_dashboard/driver_dashboard.dart';
 import 'about_company_screen.dart';
-import 'driver_dashboard.dart';
+
 import 'driver_help_issue_screen.dart';
 import 'driver_profile_screen.dart';
-import 'driver_live_location.dart';
-import 'driver_upload_advertisement_proof.dart';
+import 'driver_liveloaction/driver_live_location.dart';
+
 import 'driver_upload_status_screen.dart';
 
 class DriverMainScreen extends StatefulWidget {
-  const DriverMainScreen({Key? key}) : super(key: key);
+  const DriverMainScreen({
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<DriverMainScreen> createState() => _DriverMainScreenState();
@@ -16,16 +19,19 @@ class DriverMainScreen extends StatefulWidget {
 
 class _DriverMainScreenState extends State<DriverMainScreen> {
   int _currentIndex = 0;
-  static const Color primaryOrange = Color(0xFFFF7F00);
+  final List<Widget> _screens = [];
 
-  final List<Widget> _screens = [
-    const DriverDashboard(),
-    const DriverLiveLocation(),
-    const AboutCompanyScreen(),
-    const DriverUploadAdvertisementProof(),
-    const DriverHelpIssueScreen(),
-    const DriverProfileScreen(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _screens.addAll([
+      DriverDashboard(),
+      const DriverLiveLocation(),
+      const AboutCompanyScreen(),
+      const DriverHelpIssueScreen(),
+      const DriverProfileScreen(),
+    ]);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,14 +115,6 @@ class DriverNavigation {
   static void navigateToCompanyInfo(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => const AboutCompanyScreen()),
-    );
-  }
-
-  static void navigateToUploadProof(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const DriverUploadAdvertisementProof(),
-      ),
     );
   }
 

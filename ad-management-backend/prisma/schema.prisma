@@ -206,6 +206,12 @@ model CampaignDriver {
   assignedById         Int        // Admin ID who assigned the driver
   assignedAt           DateTime   @default(now())
   status               DriverCampaignStatus @default(ASSIGNED)
+  driverUploadAdvertisemntProofPhotoUrl String? // URL to the advertisement proof photo
+  isAdvertismentProofPhotoVerified Boolean @default(false)
+  advertisementProofPhotoStatus String @default("PENDING") // APPROVED | REJECTED | PENDING
+  advertisementProofPhotoAdminMessage String? // Admin message if rejected
+  advertisementProofPhotoAdminId Int? // Admin ID who verified the proof photo
+  
   lastLocation         Json?      // {lat: number, lng: number}
   earnings             Float      @default(0)
   completionDate       DateTime?

@@ -593,12 +593,12 @@ class _DriverUploadStatusScreenState extends State<DriverUploadStatusScreen>
           child: ElevatedButton(
             onPressed: () {
               // Navigate to DriverMainScreen and clear navigation stack
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(
-                  builder: (context) => const DriverMainScreen(),
-                ),
-                (route) => false,
-              );
+              // Navigator.of(context).pushAndRemoveUntil(
+              //   MaterialPageRoute(
+              //     builder: (context) => DriverMainScreen(driverID: ,),
+              //   ),
+              //   (route) => false,
+              // );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryOrange,

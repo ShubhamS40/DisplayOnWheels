@@ -311,7 +311,8 @@ class CampaignService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
         if (responseData is Map && responseData.containsKey('posterUrl')) {
-          responseData['posterUrl'] = _normalizePosterUrl(responseData['posterUrl'] ?? '');
+          responseData['posterUrl'] =
+              _normalizePosterUrl(responseData['posterUrl'] ?? '');
         }
         debugPrint('Campaign created successfully: $responseData');
         return {
@@ -448,6 +449,100 @@ class CampaignService {
     } catch (e) {
       debugPrint('Error fetching campaigns: $e');
       return [];
+    }
+  }
+
+  /// Uploads an advertisement proof photo for a driver campaign
+  ///
+  /// [campaignDriverId] - The ID of the campaign driver assignment
+  /// [photoFile] - The photo file to upload (for mobile platforms)
+  /// [photoBytes] - The photo bytes to upload (for web platform)
+  /// [onProgress] - Optional callback for upload progress
+  Future<Map<String, dynamic>> uploadAdvertisementProofPhoto({
+    required String campaignDriverId,
+    File? photoFile,
+    Uint8List? photoBytes,
+    Function(double)? onProgress,
+  }) async {
+    try {
+      // Get authentication token
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final driverId = prefs.getString('driverId');
+
+      if (token == null || driverId == null) {
+        debugPrint('Authentication failed: Token or Driver ID missing');
+        return {
+          'success': false,
+          'message': 'Authentication failed. Please login again.'
+        };
+      }
+
+      // Create multipart request
+      final uri = Uri.parse(
+          '${Constants.baseUrl}/api/driver-campaign/upload-advertisement-proof-photo/$campaignDriverId');
+      print("Shubham SIngh ${campaignDriverId}");
+      debugPrint('Uploading photo to: $uri');
+
+      var request = http.MultipartRequest('POST', uri);
+
+      // Add authorization header
+      request.headers['Authorization'] = 'Bearer $token';
+
+      // Add photo to the request based on platform
+      if (photoFile != null) {
+        // For mobile platforms, use File
+        final fileExtension =
+            path.extension(photoFile.path).replaceAll('.', '');
+        request.files.add(await http.MultipartFile.fromPath(
+          'photo', // Field name must match the API expectation
+          photoFile.path,
+          contentType: MediaType('image', fileExtension),
+        ));
+      } else if (photoBytes != null) {
+        // For web platform, use bytes
+        request.files.add(http.MultipartFile.fromBytes(
+          'photo',
+          photoBytes,
+          filename: 'photo.jpg',
+          contentType: MediaType('image', 'jpeg'),
+        ));
+      } else {
+        return {'success': false, 'message': 'No photo provided'};
+      }
+
+      // Send the request and get the response
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      debugPrint('Response status: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        return {
+          'success': true,
+          'message':
+              responseData['message'] ?? 'Proof photo uploaded successfully',
+          'photoUrl': responseData['photoUrl'] ?? '',
+          'data': responseData
+        };
+      } else {
+        // Parse error response
+        String errorMessage = 'Failed to upload photo';
+        try {
+          final errorData = jsonDecode(response.body);
+          errorMessage =
+              errorData['message'] ?? errorData['error'] ?? errorMessage;
+        } catch (e) {
+          errorMessage = 'Server error: HTTP ${response.statusCode}';
+        }
+
+        return {'success': false, 'message': errorMessage};
+      }
+    } catch (e) {
+      debugPrint('Error uploading advertisement proof photo: $e');
+      return {'success': false, 'message': 'Error: $e'};
     }
   }
 }

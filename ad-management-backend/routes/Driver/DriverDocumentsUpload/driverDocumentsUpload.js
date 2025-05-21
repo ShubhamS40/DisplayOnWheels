@@ -4,7 +4,7 @@ const multer = require('multer');
 const multerS3 = require('multer-s3');
 const { S3Client } = require('@aws-sdk/client-s3');
 const { v4: uuidv4 } = require('uuid');
-const { saveDriverDocuments } = require('../../../controllers/DriverDocumentsUpload/driverDocumentsUpload.controller');
+const { saveDriverDocuments } = require('../../../controllers/Driver/DriverDocumentsUpload/driverDocumentsUpload.controller');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 require('dotenv').config();

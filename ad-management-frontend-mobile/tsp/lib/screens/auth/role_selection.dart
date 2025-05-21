@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tsp/main.dart';
 import 'package:tsp/screens/admin/admin_auth/admin_login.dart';
 import 'package:tsp/screens/company/company_auth/company_login.dart';
 import 'package:tsp/screens/driver/driver_auth/driver_login.dart';
 import 'package:tsp/utils/theme_constants.dart';
 
-class RoleSelectionScreen extends StatefulWidget {
+class RoleSelectionScreen extends ConsumerStatefulWidget {
   @override
-  _RoleSelectionScreenState createState() => _RoleSelectionScreenState();
+  ConsumerState<RoleSelectionScreen> createState() =>
+      _RoleSelectionScreenState();
 }
 
-class _RoleSelectionScreenState extends State<RoleSelectionScreen>
+class _RoleSelectionScreenState extends ConsumerState<RoleSelectionScreen>
     with SingleTickerProviderStateMixin {
   String selectedRole = ""; // No role selected initially
   late AnimationController _animationController;
@@ -49,7 +52,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
     if (selectedRole.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Please select a role before continuing"),
+          content: Text("Please select a role before continuing "),
           duration: Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
           shape:
@@ -255,7 +258,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
 
                     // Header text
                     Text(
-                      "Welcome to TSP",
+                      "Welcome to TSP ",
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,

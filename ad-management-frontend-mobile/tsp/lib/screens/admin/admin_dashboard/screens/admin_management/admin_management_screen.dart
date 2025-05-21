@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:tsp/screens/admin/admin_dashboard/screens/admin_management/setRechargePlan/setrecharge_plan.dart';
 import 'package:tsp/utils/theme_constants.dart';
 import 'package:tsp/screens/admin/company_documentsVerification/company_lists_not_verifiedDocuments.dart';
 import 'package:tsp/screens/admin/driver_documentsVerification/driver_lists_not_verifiedDocumnets.dart';
 import 'package:tsp/screens/company/company_recharge_plan/ad_recharge_plan_screen.dart';
 import 'package:tsp/screens/admin/company_campaign_management/campaign_approval.dart';
+import 'package:tsp/screens/admin/admin_dashboard/screens/admin_management/campaign_driver_verification/campaign_driver_verification_list.dart';
 
 class AdminManagementScreen extends StatelessWidget {
   const AdminManagementScreen({Key? key}) : super(key: key);
@@ -106,7 +108,23 @@ class AdminManagementScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const CampaignApprovalScreen(),
+                            builder: (context) =>
+                                const CampaignApprovalScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildQuickAction(
+                      icon: Icons.verified_outlined,
+                      label: 'Ad Proof Verification',
+                      color: Colors.amber,
+                      context: context,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const CampaignDriverVerificationList(),
                           ),
                         );
                       },
@@ -120,7 +138,8 @@ class AdminManagementScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const CampaignApprovalScreen(),
+                            builder: (context) =>
+                                const CampaignApprovalScreen(),
                           ),
                         );
                       },
@@ -162,8 +181,7 @@ class AdminManagementScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                AdRechargePlanScreen(isAdmin: true),
+                            builder: (context) => AdminRechargePlansScreen(),
                           ),
                         );
                       },

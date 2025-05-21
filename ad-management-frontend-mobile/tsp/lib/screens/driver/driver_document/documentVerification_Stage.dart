@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:tsp/screens/driver/driver_dashboard.dart';
+import 'package:tsp/screens/driver/driver_dashboard/driver_dashboard.dart';
 import 'package:tsp/screens/driver/driver_document/documentUpload.dart';
 import 'package:tsp/screens/driver/driver_document/document_reupload.dart';
 import 'package:tsp/screens/driver/driver_main_screen.dart';

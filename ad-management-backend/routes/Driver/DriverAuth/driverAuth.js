@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { registerDriver } = require('../../../controllers/DriverAuthentication/driverRegistration.controller');
-const { driverLogin } = require('../../../controllers/DriverAuthentication/driverLogin.controller');
-const { forgotPasswordDriver } = require('../../../controllers/DriverAuthentication/driverForgotPassword.controller');
-const { resetPassword } = require('../../../controllers/DriverAuthentication/driverResetPassword.controller');
-const { verifyEmail,resendOtp } = require('../../../controllers/DriverAuthentication/driverEmailVerification.controller');
+const { registerDriver } = require('../../../controllers/Driver/DriverAuthentication/driverRegistration.controller');
+const { driverLogin } = require('../../../controllers/Driver/DriverAuthentication/driverLogin.controller');
+const { forgotPasswordDriver } = require('../../../controllers/Driver/DriverAuthentication/driverForgotPassword.controller');
+const { resetPassword } = require('../../../controllers/Driver/DriverAuthentication/driverResetPassword.controller');
+const { verifyEmail,resendOtp } = require('../../../controllers/Driver/DriverAuthentication/driverEmailVerification.controller');
 
 // POST /api/driver/register
 router.post('/register', registerDriver);

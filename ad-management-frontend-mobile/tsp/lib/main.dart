@@ -16,18 +16,23 @@ import 'package:tsp/screens/company/company_recharge_plan/ad_recharge_plan_scree
 import 'package:tsp/screens/driver/about_company_screen.dart';
 import 'package:tsp/screens/driver/driver_document/documentVerification_Stage.dart';
 
-import 'package:tsp/screens/driver/driver_dashboard.dart';
+import 'package:tsp/screens/driver/driver_dashboard/driver_dashboard.dart';
 import 'package:tsp/screens/driver/driver_help_issue_screen.dart';
-import 'package:tsp/screens/driver/driver_live_location.dart';
+import 'package:tsp/screens/driver/driver_liveloaction/driver_live_location.dart';
 import 'package:tsp/screens/driver/driver_main_screen.dart';
 import 'package:tsp/screens/driver/driver_profile_screen.dart';
-import 'package:tsp/screens/driver/driver_upload_advertisement_proof.dart';
+
 import 'package:tsp/screens/driver/driver_upload_status_screen.dart';
 import 'package:tsp/services/bluetooth_service.dart';
 import 'package:tsp/services/scan_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    const ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
