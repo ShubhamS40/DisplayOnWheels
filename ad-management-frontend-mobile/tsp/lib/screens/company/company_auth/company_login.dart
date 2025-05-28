@@ -10,6 +10,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
+import 'package:tsp/screens/company/company_main_screen/company_main_screen.dart';
+
 class CompanyLogin extends StatefulWidget {
   const CompanyLogin({super.key});
 
@@ -87,7 +89,7 @@ class _LoginScreenState extends State<CompanyLogin> {
             context,
             MaterialPageRoute(
                 builder: (context) =>
-                    const CompanyDashboardScreen()), // Navigate to company dashboard
+                    const CompanyMainScreen()), // Navigate to company dashboard
           );
         } else {
           // Documents pending or rejected - show document status screen

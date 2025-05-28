@@ -51,6 +51,9 @@ app.use('/api/driver-campaign', DriverUploadAdvertisementProof);
 app.use('/api/driver-location', require('./routes/Driver/DriverLiveLocation/driverLiveLocation')); // Adjust the path as needed
 
 
+// Driver Profile Screen Route
+app.use('/api/driver-profile', require('./routes/Driver/DriverProfile/driverDetails')); // Adjust the path as needed
+
 
 
 // Company All Routes
@@ -102,6 +105,19 @@ app.use('/api/admin/driver-campaign-management', driverCampaignManagement ); // 
 app.use('/api/admin/campaign-driver-verification',CampaignDriverAdvertisementVerification); // Adjust the path as needed
 
 app.use('/api/admin/drivers-locations', require('./routes/Admin/DriversLiveLocation/driversLiveLocation')); // Adjust the path as needed
+
+
+
+// Qucik Section VIew All Verified Drivers
+app.use('/api/admin/view-all-drivers', require('./routes/Admin/ViewAllDriver/allDriverList')); // Adjust the path as needed
+
+// Provide individual driver brief details
+app.use('/api/admin/brief-detail', require('./routes/Admin/ViewAllDriver/individualDriverBriefDetails.controller')); // Adjust the path as needed
+
+
+
+// View All Verified Companies
+app.use('/api/admin/view-all-companies', require('./routes/Admin/ViewAllCompany/allCompanyList')); // Adjust the path as needed
 
 
 app.get('/hi', (req, res) => {

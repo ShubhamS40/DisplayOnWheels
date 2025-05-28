@@ -7,6 +7,8 @@ import 'package:tsp/screens/company/company_recharge_plan/ad_recharge_plan_scree
 import 'package:tsp/screens/admin/company_campaign_management/campaign_approval.dart';
 import 'package:tsp/screens/admin/admin_dashboard/screens/admin_management/campaign_driver_verification/campaign_driver_verification_list.dart';
 import 'package:tsp/screens/admin/admin_dashboard/screens/admin_management/drivers_livelocation/admin_drivers_map_screen.dart';
+import 'package:tsp/screens/admin/admin_dashboard/screens/admin_management/verified_drivers/verified_drivers_screen.dart';
+import 'package:tsp/screens/admin/admin_dashboard/screens/admin_management/verified_companies/verified_companies_screen.dart';
 
 class AdminManagementScreen extends StatelessWidget {
   const AdminManagementScreen({Key? key}) : super(key: key);
@@ -165,10 +167,10 @@ class AdminManagementScreen extends StatelessWidget {
                       color: Colors.blue,
                       context: context,
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Viewing all drivers'),
-                            backgroundColor: ThemeConstants.primaryColor,
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const VerifiedDriversScreen(),
                           ),
                         );
                       },
@@ -179,10 +181,10 @@ class AdminManagementScreen extends StatelessWidget {
                       color: ThemeConstants.primaryColor,
                       context: context,
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Viewing all companies'),
-                            backgroundColor: ThemeConstants.primaryColor,
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const VerifiedCompaniesScreen(),
                           ),
                         );
                       },

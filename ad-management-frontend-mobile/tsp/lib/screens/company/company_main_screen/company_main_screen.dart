@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:tsp/screens/driver/driver_dashboard/driver_dashboard.dart';
-import 'driver_profile/driver_profile_screen.dart';
-import 'driver_liveloaction/driver_live_location.dart';
+import 'package:tsp/screens/company/company_dashboard/company_dashboard_screen.dart';
+import 'package:tsp/screens/company/company_launch_ad_campain/ad_campaign_screen.dart';
+import 'package:tsp/screens/company/company_profile/company_profile_screen.dart';
 
-class DriverMainScreen extends StatefulWidget {
-  const DriverMainScreen({
-    Key? key,
-  }) : super(key: key);
+class CompanyMainScreen extends StatefulWidget {
+  const CompanyMainScreen({Key? key}) : super(key: key);
 
   @override
-  State<DriverMainScreen> createState() => _DriverMainScreenState();
+  State<CompanyMainScreen> createState() => _CompanyMainScreenState();
 }
 
-class _DriverMainScreenState extends State<DriverMainScreen> {
+class _CompanyMainScreenState extends State<CompanyMainScreen> {
   int _currentIndex = 0;
   final List<Widget> _screens = [];
 
@@ -20,9 +18,9 @@ class _DriverMainScreenState extends State<DriverMainScreen> {
   void initState() {
     super.initState();
     _screens.addAll([
-      DriverDashboard(),
-      const DriverLiveLocation(),
-      const DriverProfileScreen(),
+      const CompanyDashboardScreen(),
+      const AdCampaignScreen(),
+      const CompanyProfileScreen(),
     ]);
   }
 
@@ -30,7 +28,7 @@ class _DriverMainScreenState extends State<DriverMainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_currentIndex],
-      bottomNavigationBar: DriverBottomNavigationBar(
+      bottomNavigationBar: CompanyBottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {
@@ -42,13 +40,12 @@ class _DriverMainScreenState extends State<DriverMainScreen> {
   }
 }
 
-class DriverBottomNavigationBar extends StatelessWidget {
+class CompanyBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
-  static const Color primaryOrange =
-      Color(0xFFFF5722); // Using the brand orange color from memories
+  static const Color primaryOrange = Color(0xFFFF5722);
 
-  const DriverBottomNavigationBar({
+  const CompanyBottomNavigationBar({
     Key? key,
     required this.currentIndex,
     required this.onTap,
@@ -84,18 +81,18 @@ class DriverBottomNavigationBar extends StatelessWidget {
           type: BottomNavigationBarType.fixed,
           items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard),
+              icon: Icon(Icons.home),
               activeIcon: _buildActiveIcon(Icons.home),
               label: 'Dashboard',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.location_on),
-              activeIcon: _buildActiveIcon(Icons.location_on),
-              label: 'Location',
+              icon: Icon(Icons.campaign),
+              activeIcon: _buildActiveIcon(Icons.campaign),
+              label: 'Launch Ad',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              activeIcon: _buildActiveIcon(Icons.person),
+              icon: Icon(Icons.business),
+              activeIcon: _buildActiveIcon(Icons.business),
               label: 'Profile',
             ),
           ],
@@ -117,16 +114,22 @@ class DriverBottomNavigationBar extends StatelessWidget {
 }
 
 // Navigation helper to use in other screens
-class DriverNavigation {
-  static void navigateToProfile(BuildContext context) {
+class CompanyNavigation {
+  static void navigateToDashboard(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const DriverProfileScreen()),
+      MaterialPageRoute(builder: (context) => const CompanyDashboardScreen()),
     );
   }
 
-  static void navigateToLiveLocation(BuildContext context) {
+  static void navigateToAdCampaign(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const DriverLiveLocation()),
+      MaterialPageRoute(builder: (context) => const AdCampaignScreen()),
+    );
+  }
+
+  static void navigateToProfile(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const CompanyProfileScreen()),
     );
   }
 }

@@ -12,26 +12,37 @@ import 'package:tsp/screens/auth/role_selection.dart';
 import 'package:tsp/screens/company/company_document/company_upload_documents.dart';
 import 'package:tsp/screens/company/company_document/company_verification_stage.dart';
 import 'package:tsp/screens/company/company_launch_ad_campain/ad_campaign_screen.dart';
+import 'package:tsp/screens/company/company_main_screen/company_main_screen.dart';
 import 'package:tsp/screens/company/company_recharge_plan/ad_recharge_plan_screen.dart';
 
-import 'package:tsp/screens/driver/about_company_screen.dart';
+import 'package:tsp/screens/driver/about_company_dow/about_company_screen.dart';
 import 'package:tsp/screens/driver/driver_document/documentVerification_Stage.dart';
 
 import 'package:tsp/screens/driver/driver_dashboard/driver_dashboard.dart';
-import 'package:tsp/screens/driver/driver_help_issue_screen.dart';
+import 'package:tsp/screens/driver/driver_help_issue_screen/driver_help_issue_screen.dart';
 import 'package:tsp/screens/driver/driver_liveloaction/driver_live_location.dart';
 import 'package:tsp/screens/driver/driver_main_screen.dart';
-import 'package:tsp/screens/driver/driver_profile_screen.dart';
+import 'package:tsp/screens/driver/driver_profile/driver_profile_screen.dart';
 
 import 'package:tsp/screens/driver/driver_upload_status_screen.dart';
 import 'package:tsp/services/bluetooth_service.dart';
 import 'package:tsp/services/scan_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:provider/provider.dart' as provider;
+import 'providers/driver_profile_provider.dart';
+import 'providers/company_profile_provider.dart';
 
 void main() {
   runApp(
-    const ProviderScope(
-      child: MyApp(),
+    provider.MultiProvider(
+      providers: [
+        provider.ChangeNotifierProvider(create: (_) => DriverProfileProvider()),
+        provider.ChangeNotifierProvider(
+            create: (_) => CompanyProfileProvider()),
+      ],
+      child: const ProviderScope(
+        child: MyApp(),
+      ),
     ),
   );
 }

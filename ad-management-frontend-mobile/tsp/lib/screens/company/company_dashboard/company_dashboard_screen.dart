@@ -31,11 +31,6 @@ class _CompanyDashboardScreenState extends State<CompanyDashboardScreen>
   };
 
   // Subscription plan data
-  final Map<String, dynamic> subscriptionData = {
-    'currentPlan': 'Premium',
-    'expiryDate': '24/09/2023',
-    'daysLeft': 15,
-  };
 
   // Company ID from shared preferences
   String? companyId;
@@ -183,12 +178,6 @@ class _CompanyDashboardScreenState extends State<CompanyDashboardScreen>
                       ],
 
                       // Subscription Plan Card
-                      SubscriptionPlanCard(
-                        subscriptionData: subscriptionData,
-                        isDarkMode: isDarkMode,
-                      ),
-
-                      const SizedBox(height: 20),
 
                       // Live Driver Tracking Button
                       InkWell(
@@ -271,13 +260,6 @@ class _CompanyDashboardScreenState extends State<CompanyDashboardScreen>
                 ),
               ),
             ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFFFF5722),
-        foregroundColor: Colors.white,
-        onPressed: _launchNewCampaign,
-        child: const Icon(Icons.add),
-        tooltip: 'Create New Campaign',
-      ),
     );
   }
 }
