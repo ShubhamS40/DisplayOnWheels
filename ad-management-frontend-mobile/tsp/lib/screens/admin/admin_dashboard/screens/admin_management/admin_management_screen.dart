@@ -6,6 +6,7 @@ import 'package:tsp/screens/admin/driver_documentsVerification/driver_lists_not_
 import 'package:tsp/screens/company/company_recharge_plan/ad_recharge_plan_screen.dart';
 import 'package:tsp/screens/admin/company_campaign_management/campaign_approval.dart';
 import 'package:tsp/screens/admin/admin_dashboard/screens/admin_management/campaign_driver_verification/campaign_driver_verification_list.dart';
+import 'package:tsp/screens/admin/admin_dashboard/screens/admin_management/drivers_livelocation/admin_drivers_map_screen.dart';
 
 class AdminManagementScreen extends StatelessWidget {
   const AdminManagementScreen({Key? key}) : super(key: key);
@@ -99,6 +100,20 @@ class AdminManagementScreen extends StatelessWidget {
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
                   children: [
+                    _buildQuickAction(
+                      icon: Icons.location_on,
+                      label: 'View All Drivers Live Location',
+                      color: Color(0xFFFF5722),
+                      context: context,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AdminDriversMapScreen(),
+                          ),
+                        );
+                      },
+                    ),
                     _buildQuickAction(
                       icon: Icons.campaign_outlined,
                       label: 'View All Campaigns',

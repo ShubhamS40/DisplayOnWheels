@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'dart:developer' as developer;
 
 // Import components
 import 'components/map_component.dart';
@@ -51,7 +52,9 @@ class _DriverLiveLocationState extends State<DriverLiveLocation>
   void initState() {
     super.initState();
     
-    // Create a new controller
+    developer.log('Initializing driver live location screen', name: 'DriverLiveLocation');
+    
+    // Create a new controller - must be done before any usage
     _mapController = MapController();
     
     // Initialize services
@@ -67,22 +70,52 @@ class _DriverLiveLocationState extends State<DriverLiveLocation>
       duration: const Duration(milliseconds: 300),
     );
 
-    // Set timer to update timestamps
-    Timer.periodic(const Duration(seconds: 30), (timer) {
-      if (_locationService.isSharing && mounted) {
+    // Set timer to update timestamps and refresh UI
+    Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (mounted) {
         setState(() {
-          _locationService.updateTimestamp();
+          // Just trigger a rebuild to update location data on screen
+          if (_locationService.currentLocation != null) {
+            developer.log(
+              'Timer update - Location: ${_locationService.currentLocation?.latitude}, ${_locationService.currentLocation?.longitude}',
+              name: 'DriverLiveLocation'
+            );
+          }
+          if (_locationService.isSharing) {
+            _locationService.updateTimestamp();
+          }
         });
       }
     });
   }
 
   Future<void> _initializeServices() async {
-    await _locationService.initialize();
-    await _bluetoothService.initialize();
     setState(() {
-      _isMapLoading = false;
+      _isMapLoading = true;
     });
+    
+    try {
+      await _locationService.initialize();
+      await _bluetoothService.initialize();
+      
+      if (_locationService.currentLocation != null) {
+        developer.log(
+          'Services initialized. Location: ${_locationService.currentLocation?.latitude}, ${_locationService.currentLocation?.longitude}',
+          name: 'DriverLiveLocation'
+        );
+      } else {
+        developer.log('Services initialized but no location data available yet', name: 'DriverLiveLocation');
+      }
+    } catch (e) {
+      developer.log('Error initializing services: $e', name: 'DriverLiveLocation');
+      _showSnackBar('Error initializing location services. Please restart the app.');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isMapLoading = false;
+        });
+      }
+    }
   }
 
   // No longer needed with OpenStreetMap
@@ -111,7 +144,7 @@ class _DriverLiveLocationState extends State<DriverLiveLocation>
     // Check if map is fully ready
     if (!_mapReady) {
       _showSnackBar('Map is not ready yet. Please wait a moment and try again.');
-      print('Map not ready when trying to go to current location');
+      developer.log('Map not ready when trying to go to current location', name: 'DriverLiveLocation');
       return;
     }
     
@@ -120,10 +153,25 @@ class _DriverLiveLocationState extends State<DriverLiveLocation>
     });
     
     try {
-      print('Attempting to navigate to current location: ${_locationService.currentLocation?.latitude}, ${_locationService.currentLocation?.longitude}');
+      // First, let's display the current location data regardless of map state
+      if (_locationService.currentLocation != null) {
+        final lat = _locationService.currentLocation!.latitude;
+        final lng = _locationService.currentLocation!.longitude;
+        
+        if (lat != null && lng != null) {
+          _showSnackBar('Your coordinates: ${lat.toStringAsFixed(6)}, ${lng.toStringAsFixed(6)}');
+          developer.log('Current location: $lat, $lng', name: 'DriverLiveLocation');
+        } else {
+          _showSnackBar('Location data incomplete. Please check location permissions.');
+        }
+      } else {
+        _showSnackBar('No location data available. Please check location permissions.');
+      }
+      
+      // Then try to move map to that location
       await _locationService.goToCurrentLocation(_mapController);
     } catch (e) {
-      print("Error in _goToMyLocation: $e");
+      developer.log("Error in _goToMyLocation: $e", name: 'DriverLiveLocation');
       _showSnackBar('Could not navigate to your location. Please try again.');
     } finally {
       if (mounted) {
@@ -215,30 +263,45 @@ class _DriverLiveLocationState extends State<DriverLiveLocation>
             onRetry: () {
               setState(() {
                 _isMapLoading = true;
+                _mapReady = false;
+                _mapInitialized = false;
               });
               _initializeServices();
             },
             onMapCreated: (controller) {
-              print("Map created with controller");
+              developer.log("Map created with controller", name: 'DriverLiveLocation');
               setState(() {
                 _mapInitialized = true;
-                _isMapLoading = false;
               });
             },
             onMapReady: () {
               // This will be called when the map is fully rendered and ready
+              developer.log("Map is fully ready and rendered", name: 'DriverLiveLocation');
               setState(() {
                 _mapReady = true;
+                _isMapLoading = false;
               });
               
-              print("Map is fully ready and rendered. Navigating to location...");
+              // Show current location in a snackbar even if map navigation fails
+              if (_locationService.currentLocation != null) {
+                final lat = _locationService.currentLocation!.latitude;
+                final lng = _locationService.currentLocation!.longitude;
+                if (lat != null && lng != null) {
+                  _showSnackBar('Your coordinates: ${lat.toStringAsFixed(6)}, ${lng.toStringAsFixed(6)}');
+                }
+              }
               
               // Now it's safe to navigate to current location
               if (_locationService.currentLocation != null) {
                 try {
-                  _locationService.goToCurrentLocation(_mapController);
+                  // Wait a moment to ensure map is fully rendered
+                  Future.delayed(Duration(milliseconds: 500), () {
+                    if (mounted) {
+                      _locationService.goToCurrentLocation(_mapController);
+                    }
+                  });
                 } catch (e) {
-                  print("Error navigating to location: $e");
+                  developer.log("Error navigating to location: $e", name: 'DriverLiveLocation');
                   _showSnackBar("Could not go to your location. Please try again later.");
                 }
               }
@@ -267,6 +330,9 @@ class _DriverLiveLocationState extends State<DriverLiveLocation>
             onShowBluetoothPanel: _toggleBluetoothPanel,
             isBluetoothOn: _bluetoothService.isBluetoothOn,
             isTargetDeviceConnected: _bluetoothService.isTargetDeviceConnected,
+            storedInRedis: _locationService.storedInRedis,
+            storedInDatabase: _locationService.storedInDatabase,
+            nextDatabaseUpdateIn: _locationService.nextDatabaseUpdateIn,
           ),
 
           // Bluetooth Panel

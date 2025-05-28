@@ -19,6 +19,7 @@ import 'package:tsp/screens/driver/driver_dashboard/campaign_detail/components/c
 import 'package:tsp/screens/driver/driver_dashboard/campaign_detail/components/advertisement_proof_section.dart';
 import 'package:tsp/screens/driver/driver_dashboard/campaign_detail/components/campaign_detail_item.dart';
 import 'package:tsp/screens/driver/driver_dashboard/campaign_detail/components/guideline_item.dart';
+import 'package:tsp/screens/driver/driver_dashboard/campaign_detail/components/current_location_view.dart';
 
 class CampaignDetailsScreen extends ConsumerStatefulWidget {
   final String campaignId;
@@ -331,6 +332,51 @@ class _CampaignDetailsScreenState extends ConsumerState<CampaignDetailsScreen> {
                           _getValue('campaign.state'),
                         ),
                         buildDetailItem: _buildDetailItem,
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Current Location Section
+                      Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.location_on,
+                                    color: const Color(0xFFFF5722),
+                                    size: 24,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Current Location',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              // Use our new component with proper null handling
+                              CurrentLocationView(
+                                locationData: campaignData != null ? 
+                                    _getValue('currentLocation') != null ? 
+                                        Map<String, dynamic>.from({"lat": _getValue('currentLocation.lat'), "lng": _getValue('currentLocation.lng')}) : 
+                                        null : 
+                                    null,
+                                height: 200,
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 20),
 

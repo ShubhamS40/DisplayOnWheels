@@ -5,6 +5,7 @@ import 'package:tsp/screens/admin/admin_dashboard/screens/admin_management/setRe
 import 'package:tsp/screens/admin/company_campaign_management/campaign_approval.dart';
 import 'package:tsp/screens/admin/company_documentsVerification/company_lists_not_verifiedDocuments.dart';
 import 'package:tsp/screens/admin/driver_documentsVerification/driver_lists_not_verifiedDocumnets.dart';
+import 'package:tsp/screens/admin/admin_dashboard/screens/admin_management/drivers_livelocation/admin_drivers_map_screen.dart';
 
 import 'package:tsp/screens/auth/role_selection.dart';
 
@@ -61,7 +62,14 @@ class MyApp extends StatelessWidget {
         ),
       ),
       themeMode: ThemeMode.system, // This will follow system theme
-      home: RoleSelectionScreen(),
+      home: Scaffold(
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: RoleSelectionScreen(),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -16,6 +16,11 @@ class ControlPanelComponent extends StatelessWidget {
   final VoidCallback onShowBluetoothPanel;
   final bool isBluetoothOn;
   final bool isTargetDeviceConnected;
+  
+  // Storage info
+  final bool? storedInRedis;
+  final bool? storedInDatabase;
+  final double? nextDatabaseUpdateIn;
 
   const ControlPanelComponent({
     Key? key,
@@ -31,6 +36,9 @@ class ControlPanelComponent extends StatelessWidget {
     required this.onShowBluetoothPanel,
     required this.isBluetoothOn,
     required this.isTargetDeviceConnected,
+    this.storedInRedis,
+    this.storedInDatabase,
+    this.nextDatabaseUpdateIn,
   }) : super(key: key);
 
   @override
@@ -49,6 +57,9 @@ class ControlPanelComponent extends StatelessWidget {
             successColor: successColor,
             cardColor: cardColor,
             isTargetDeviceConnected: isTargetDeviceConnected,
+            storedInRedis: storedInRedis,
+            storedInDatabase: storedInDatabase,
+            nextDatabaseUpdateIn: nextDatabaseUpdateIn,
           ),
           SizedBox(height: 16),
           Container(

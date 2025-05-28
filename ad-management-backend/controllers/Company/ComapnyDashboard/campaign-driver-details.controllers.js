@@ -53,17 +53,31 @@ exports.getCompanyCampaignDetails = async (req, res) => {
             description: campaign.plan.subtitle
           }
         : null,
-      allocatedDrivers: campaign.campaignDrivers.map(allocation => ({
-        id: allocation.driver.id,
-        name: allocation.driver.fullName,
-        vehicleNumber: allocation.driver.vehicleNumber || 'N/A',
-        phone: allocation.driver.contactNumber,
-        status: allocation.status || 'Active',
-        lastActive: allocation.lastActiveAt,
-        location: allocation.lastLocation ? JSON.parse(allocation.lastLocation) : null,
-        assignedAt: allocation.assignedAt,
-        uploadedImages: allocation.proofImages ? JSON.parse(allocation.proofImages) : []
-      }))
+ allocatedDrivers: campaign.campaignDrivers.map(allocation => {
+ 
+  return {
+    id: allocation.driver.id,
+    name: allocation.driver.fullName,
+    vehicleNumber: allocation.driver.vehicleNumber || 'N/A',
+    phone: allocation.driver.contactNumber,
+    status: allocation.status || 'Active',
+    lastActive: allocation.lastActiveAt,
+    currentLocation: allocation.driver.currentLocation
+      ? typeof allocation.driver.currentLocation === 'string'
+        ? JSON.parse(allocation.driver.currentLocation)
+        : allocation.driver.currentLocation
+      : null,
+    assignedAt: allocation.assignedAt,
+    advertisementProofVerified: allocation.isAdvertismentProofPhotoVerified,
+    AddProofPhoto:
+      allocation.isAdvertismentProofPhotoVerified === true
+        ? allocation.driverUploadAdvertisemntProofPhotoUrl
+        : null
+  };
+})
+
+
+
     };
 
     res.status(200).json(formattedData);

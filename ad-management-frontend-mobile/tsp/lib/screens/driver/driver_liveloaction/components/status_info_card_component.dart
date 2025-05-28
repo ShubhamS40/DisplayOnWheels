@@ -8,6 +8,11 @@ class StatusInfoCardComponent extends StatelessWidget {
   final Color successColor;
   final Color cardColor;
   final bool isTargetDeviceConnected;
+  
+  // Storage info
+  final bool? storedInRedis;
+  final bool? storedInDatabase;
+  final double? nextDatabaseUpdateIn;
 
   const StatusInfoCardComponent({
     Key? key,
@@ -17,6 +22,9 @@ class StatusInfoCardComponent extends StatelessWidget {
     required this.successColor,
     required this.cardColor,
     required this.isTargetDeviceConnected,
+    this.storedInRedis,
+    this.storedInDatabase,
+    this.nextDatabaseUpdateIn,
   }) : super(key: key);
 
   @override
@@ -78,10 +86,90 @@ class StatusInfoCardComponent extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 16),
+          SizedBox(height: 12),
+          // Storage Info
+          if (isSharing && storedInRedis != null)
+            _buildStorageInfoRow(),
+          SizedBox(height: 12),
           _buildDeviceStatusRow(),
         ],
       ),
+    );
+  }
+
+  Widget _buildStorageInfoRow() {
+    return Row(
+      children: [
+        Container(
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.orange.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.storage,
+            color: Color(0xFFFF5722),
+            size: 20,
+          ),
+        ),
+        SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    'Storage: ',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Icon(
+                    Icons.circle,
+                    size: 8,
+                    color: storedInRedis == true ? Colors.green : Colors.grey,
+                  ),
+                  SizedBox(width: 4),
+                  Text(
+                    'Redis',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: storedInRedis == true ? Colors.green : Colors.grey,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(
+                    Icons.circle,
+                    size: 8,
+                    color: storedInDatabase == true ? Colors.green : Colors.grey,
+                  ),
+                  SizedBox(width: 4),
+                  Text(
+                    'DB',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: storedInDatabase == true ? Colors.green : Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+              if (nextDatabaseUpdateIn != null && nextDatabaseUpdateIn! > 0)
+                Text(
+                  'Next DB update in ${nextDatabaseUpdateIn!.toStringAsFixed(1)}s',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

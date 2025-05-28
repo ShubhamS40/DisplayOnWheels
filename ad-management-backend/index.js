@@ -17,6 +17,7 @@ const ComapnyDashboard=require('./routes/Company/CompanyDashboard/campaign-drive
 const DriverDashboard=require('./routes/Driver/DriverDashboard/comapnyCampaignDetail'); // Adjust the path as needed
 const DriverUploadAdvertisementProof = require('./routes/Driver/DriverUploadAdvertisementProof/uploadAdvertisementProofPhoto'); // Adjust the path as needed
 const CampaignDriverAdvertisementVerification= require('./routes/Admin/CampaignDriverVerification/driverAdvertisementProofVerification'); // Adjust the path as needed
+const CompaignAssignDriversLiveLocation= require('./routes/Company/CompanyViewLiveLocationAllDrivers/companyViewLiveLocationDrivers'); // Adjust the path as needed
 
 // Middleware
 // Enable CORS for all routes and origins (for development)
@@ -46,6 +47,10 @@ app.use('/api/driver-dashboard', DriverDashboard); // Adjust the path as needed
 app.use('/api/driver-campaign', DriverUploadAdvertisementProof); 
 // Define your other routes and middlewares here
 
+// Add The Driver Live Location To The Data base or Update the live location driver database and redis
+app.use('/api/driver-location', require('./routes/Driver/DriverLiveLocation/driverLiveLocation')); // Adjust the path as needed
+
+
 
 
 // Company All Routes
@@ -61,6 +66,10 @@ app.use('/api/driver-campaign', DriverUploadAdvertisementProof);
 // CompanyDashobard all company and comapign or Driver Details Route
 
 app.use('/api/company-dashboard',ComapnyDashboard)
+
+// Get all Drivers Live Location for The Assigned Drivers
+app.use("/api/company/compaign-assign-drivers",CompaignAssignDriversLiveLocation)
+
 
 
 
@@ -91,6 +100,9 @@ app.use('/api/admin/driver-campaign-management', driverCampaignManagement ); // 
 
 // Admin Campaign Driver Verification
 app.use('/api/admin/campaign-driver-verification',CampaignDriverAdvertisementVerification); // Adjust the path as needed
+
+app.use('/api/admin/drivers-locations', require('./routes/Admin/DriversLiveLocation/driversLiveLocation')); // Adjust the path as needed
+
 
 app.get('/hi', (req, res) => {
   res.send('Welcome to the API!');

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'dart:developer' as developer;
 
 // Location data model to avoid location package dependency in component
 class LocationData {
@@ -34,6 +35,12 @@ class MapComponent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Debug the current location data
+    developer.log(
+      'Building map component with location: ${currentLocation?.latitude}, ${currentLocation?.longitude}',
+      name: 'MapComponent',
+    );
+
     if (isMapLoading) {
       return Center(
         child: CircularProgressIndicator(
@@ -63,7 +70,12 @@ class MapComponent extends StatelessWidget {
                 const InteractionOptions(flags: InteractiveFlag.all),
             onMapReady: () {
               // This ensures the map is fully initialized before any operations
-              print("Map is ready and fully initialized");
+              developer.log('Map is ready and fully initialized', name: 'MapComponent');
+              
+              // Call onMapCreated first if it's provided
+              onMapCreated(mapController);
+              
+              // Then call onMapReady if provided
               if (onMapReady != null) {
                 onMapReady!();
               }
@@ -157,6 +169,18 @@ class MapComponent extends StatelessWidget {
                 color: Colors.grey.shade700,
               ),
             ),
+            if (currentLocation != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                child: Text(
+                  "Current Location: ${currentLocation!.latitude}, ${currentLocation!.longitude}",
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             SizedBox(height: 8),
             ElevatedButton(
               onPressed: onRetry,

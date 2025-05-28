@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'campaign_image_viewer.dart';
 
 class DriverDetailBottomSheet extends StatefulWidget {
   final Map<String, dynamic> driver;
+  final String? adProofPhotoUrl;
+  final bool isAdProofVerified;
 
   const DriverDetailBottomSheet({
     Key? key,
     required this.driver,
+    this.adProofPhotoUrl,
+    this.isAdProofVerified = false,
   }) : super(key: key);
 
   @override
@@ -16,30 +21,96 @@ class DriverDetailBottomSheet extends StatefulWidget {
 }
 
 class _DriverDetailBottomSheetState extends State<DriverDetailBottomSheet> {
-  GoogleMapController? _mapController;
-  Set<Marker> _markers = {};
+  MapController? _mapController;
+  List<Marker> _markers = [];
+  bool _mapReady = false;
 
   @override
   void initState() {
     super.initState();
+    // Initialize map controller for OpenStreetMap
+    _mapController = MapController();
     _setupMarkers();
   }
 
   void _setupMarkers() {
-    if (widget.driver['location'] != null) {
-      setState(() {
-        _markers = {
+    List<Marker> markers = [];
+    LatLng? position;
+    
+    // Check if we have currentLocation data in the new API format
+    if (widget.driver['currentLocation'] != null &&
+        widget.driver['currentLocation']['lat'] != null &&
+        widget.driver['currentLocation']['lng'] != null) {
+      
+      // Get lat and lng from the currentLocation object
+      final double lat = double.parse(widget.driver['currentLocation']['lat'].toString());
+      final double lng = double.parse(widget.driver['currentLocation']['lng'].toString());
+      position = LatLng(lat, lng);
+      
+      markers.add(
+        Marker(
+          width: 40.0,
+          height: 40.0,
+          point: position,
+          child: _buildMarkerWidget(widget.driver['name']),
+        ),
+      );
+    } 
+    // Fallback to the old format if needed
+    else if (widget.driver['location'] != null) {
+      try {
+        // Convert from Google LatLng to OpenStreetMap LatLng if needed
+        final oldPosition = widget.driver['location'];
+        position = LatLng(oldPosition.latitude, oldPosition.longitude);
+        
+        markers.add(
           Marker(
-            markerId: MarkerId(widget.driver['id']),
-            position: widget.driver['location'],
-            infoWindow: InfoWindow(
-              title: widget.driver['name'],
-              snippet: 'Vehicle: ${widget.driver['vehicleNumber']}',
+            width: 40.0,
+            height: 40.0,
+            point: position,
+            child: _buildMarkerWidget(widget.driver['name']),
+          ),
+        );
+      } catch (e) {
+        debugPrint('Error converting location data: $e');
+      }
+    }
+    
+    setState(() {
+      _markers = markers;
+    });
+  }
+  
+  Widget _buildMarkerWidget(String name) {
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: CircleAvatar(
+              radius: 16,
+              backgroundColor: const Color(0xFFFF5722),
+              child: const Icon(
+                Icons.directions_car,
+                color: Colors.white,
+                size: 18,
+              ),
             ),
           ),
-        };
-      });
-    }
+        ),
+      ],
+    );
   }
 
   void _viewImage(String imageUrl) {
@@ -191,27 +262,46 @@ class _DriverDetailBottomSheetState extends State<DriverDetailBottomSheet> {
                       backgroundColor: Colors.orange,
                       content: SizedBox(
                         height: 200,
-                        child: widget.driver['location'] != null
+                        child: _hasValidLocation(widget.driver)
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
-                                child: GoogleMap(
-                                  initialCameraPosition: CameraPosition(
-                                    target: widget.driver['location'],
-                                    zoom: 14,
+                                child: FlutterMap(
+                                  mapController: _mapController,
+                                  options: MapOptions(
+                                    initialCenter: _getLatLng(widget.driver),
+                                    initialZoom: 14.0,
+                                    onMapReady: () {
+                                      setState(() {
+                                        _mapReady = true;
+                                      });
+                                    },
                                   ),
-                                  markers: _markers,
-                                  onMapCreated: (controller) {
-                                    _mapController = controller;
-                                  },
-                                  myLocationEnabled: false,
-                                  zoomControlsEnabled: false,
-                                  mapToolbarEnabled: false,
+                                  children: [
+                                    TileLayer(
+                                      urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                      subdomains: const ['a', 'b', 'c'],
+                                    ),
+                                    MarkerLayer(
+                                      markers: _markers,
+                                    ),
+                                  ],
                                 ),
                               )
                             : Center(
-                                child: Text(
-                                  'Location not available',
-                                  style: TextStyle(color: textColor),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.location_off,
+                                      size: 48,
+                                      color: Colors.grey[400],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Location data not available',
+                                      style: TextStyle(color: textColor),
+                                    ),
+                                  ],
                                 ),
                               ),
                       ),
@@ -219,74 +309,109 @@ class _DriverDetailBottomSheetState extends State<DriverDetailBottomSheet> {
 
                     const SizedBox(height: 20),
 
-                    // Ad Proof Images
+                    // Ad Proof Photo
                     _infoCard(
-                      title: 'Ad Proof Uploads',
-                      icon: Icons.photo_library,
+                      title: 'Ad Proof Photo',
+                      icon: Icons.photo,
                       iconColor: accentColor,
                       backgroundColor: Colors.orange,
-                      content: widget.driver['uploadedImages'] != null &&
-                              (widget.driver['uploadedImages'] as List)
-                                  .isNotEmpty
-                          ? GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3,
-                                crossAxisSpacing: 8,
-                                mainAxisSpacing: 8,
-                              ),
-                              itemCount:
-                                  (widget.driver['uploadedImages'] as List)
-                                      .length,
-                              itemBuilder: (context, index) {
-                                final imageUrl =
-                                    widget.driver['uploadedImages'][index];
-                                return GestureDetector(
-                                  onTap: () => _viewImage(imageUrl),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(8),
-                                      image: DecorationImage(
-                                        image: NetworkImage(imageUrl),
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                    child: Align(
-                                      alignment: Alignment.topRight,
-                                      child: Container(
-                                        margin: const EdgeInsets.all(4),
-                                        padding: const EdgeInsets.all(4),
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withOpacity(0.7),
-                                          borderRadius:
-                                              BorderRadius.circular(4),
+                      content: widget.adProofPhotoUrl != null
+                          ? Column(
+                              children: [
+                                GestureDetector(
+                                  onTap: () =>
+                                      _viewImage(widget.adProofPhotoUrl!),
+                                  child: Stack(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.network(
+                                          widget.adProofPhotoUrl!,
+                                          fit: BoxFit.cover,
+                                          width: double.infinity,
+                                          height: 200,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  Container(
+                                            height: 200,
+                                            width: double.infinity,
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey[300],
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                const Icon(
+                                                  Icons.broken_image,
+                                                  color: Colors.grey,
+                                                  size: 48,
+                                                ),
+                                                const SizedBox(height: 8),
+                                                Text(
+                                                  'Failed to load image',
+                                                  style: TextStyle(
+                                                      color: Colors.grey[600]),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         ),
-                                        child: const Icon(
-                                          Icons.fullscreen,
-                                          color: Colors.white,
-                                          size: 14,
+                                      ),
+                                      Positioned(
+                                        top: 8,
+                                        right: 8,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                Colors.black.withOpacity(0.6),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.fullscreen,
+                                            color: Colors.white,
+                                            size: 16,
+                                          ),
                                         ),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                );
-                              },
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Tap to view full size image',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: textColor.withOpacity(0.6),
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
                             )
                           : Center(
                               child: Padding(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 20),
-                                child: Text(
-                                  'No images uploaded yet',
-                                  style: TextStyle(color: textColor),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.no_photography,
+                                      size: 48,
+                                      color: Colors.grey[400],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      'No ad proof uploaded yet',
+                                      style: TextStyle(color: textColor),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
                     ),
-
-                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -357,6 +482,42 @@ class _DriverDetailBottomSheetState extends State<DriverDetailBottomSheet> {
         ),
       ),
     );
+  }
+
+  // Helper method to check if driver has valid location data
+  bool _hasValidLocation(Map<String, dynamic> driver) {
+    // First check new format
+    if (driver['currentLocation'] != null &&
+        driver['currentLocation']['lat'] != null &&
+        driver['currentLocation']['lng'] != null) {
+      return true;
+    }
+    // Fallback to old format
+    return driver['location'] != null;
+  }
+
+  // Helper method to get LatLng from driver data
+  LatLng _getLatLng(Map<String, dynamic> driver) {
+    // First try new format
+    if (driver['currentLocation'] != null &&
+        driver['currentLocation']['lat'] != null &&
+        driver['currentLocation']['lng'] != null) {
+      try {
+        final double lat = double.parse(driver['currentLocation']['lat'].toString());
+        final double lng = double.parse(driver['currentLocation']['lng'].toString());
+        return LatLng(lat, lng);
+      } catch (e) {
+        debugPrint('Error parsing location data: $e');
+      }
+    }
+    
+    // Fallback to old format
+    if (driver['location'] != null) {
+      return driver['location'];
+    }
+    
+    // Default fallback to Delhi
+    return const LatLng(28.6139, 77.2090);
   }
 
   Widget _infoRow({

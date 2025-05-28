@@ -3,6 +3,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:intl/intl.dart';
+import 'package:tsp/screens/company/company_dashboard/campaign_details/components/open_street_map.dart';
 import 'package:tsp/utils/constants.dart';
 import 'components/campaign_image_viewer.dart';
 import 'components/driver_detail_bottom_sheet.dart';
@@ -81,7 +83,11 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
       }
 
       // Fetch campaign details from API
-      final apiUrl = '${Constants.baseUrl}/api/company-dashboard/campaigns/$campaignId';
+      final apiUrl =
+          '${Constants.baseUrl}/api/company-dashboard/campaigns/$campaignId';
+
+      // For testing, we can directly use the local URL
+      // final apiUrl = 'http://localhost:5000/api/company-dashboard/campaigns/$campaignId';
 
       final response = await http.get(
         Uri.parse(apiUrl),
@@ -94,27 +100,39 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
 
-        // Extract allocated drivers from the response
+        // Extract campaign details from the new API format
+        if (responseData.containsKey('campaign')) {
+          // Update campaign data if needed
+          debugPrint('Campaign data loaded successfully');
+        }
+
+        // Extract allocated drivers from the new API response format
         if (responseData.containsKey('allocatedDrivers') &&
             responseData['allocatedDrivers'] is List) {
           _allocatedDrivers = List<Map<String, dynamic>>.from(
             responseData['allocatedDrivers'].map((driver) => {
-              'id': driver['id'] ?? '',
-              'name': driver['name'] ?? 'Unknown Driver',
-              'vehicleNumber': driver['vehicleNumber'] ?? 'No Vehicle',
-              'phone': driver['phone'] ?? '',
-              'status': driver['status'] ?? 'UNKNOWN',
-              'lastActive': _formatLastSeen(driver['assignedAt']),
-              // Add default location if needed for map view
-              'location': driver['location'] != null
-                  ? LatLng(
-                      driver['location']['latitude'] ?? 28.6129,
-                      driver['location']['longitude'] ?? 77.2295,
-                    )
-                  : const LatLng(28.6129, 77.2295), // Default to Delhi area
-              'uploadedImages': driver['uploadedImages'] ?? [],
-              'assignedAt': driver['assignedAt'],
-            }),
+                  'id': driver['id'] ?? '',
+                  'name': driver['name'] ?? 'Unknown Driver',
+                  'vehicleNumber': driver['vehicleNumber'] ?? 'No Vehicle',
+                  'phone': driver['phone'] ?? '',
+                  'status': driver['status'] ?? 'UNKNOWN',
+                  'lastActive': _formatLastSeen(driver['assignedAt']),
+                  // Handle the new currentLocation format
+                  'currentLocation': driver['currentLocation'],
+                  // For Google Maps compatibility (can be removed if not needed)
+                  'location': driver['currentLocation'] != null
+                      ? LatLng(
+                          double.parse(
+                              driver['currentLocation']['lat'].toString()),
+                          double.parse(
+                              driver['currentLocation']['lng'].toString()),
+                        )
+                      : const LatLng(28.6129, 77.2295), // Default to Delhi area
+                  'advertisementProofVerified':
+                      driver['advertisementProofVerified'] ?? false,
+                  'AddProofPhoto': driver['AddProofPhoto'],
+                  'assignedAt': driver['assignedAt'],
+                }),
           ).toList();
         }
       } else {
@@ -154,11 +172,20 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
   }
 
   void _showDriverDetails(Map<String, dynamic> driver) {
+    // Check if the driver has uploaded ad proof photos
+    final hasAdProof = driver['AddProofPhoto'] != null &&
+        driver['AddProofPhoto'].toString().isNotEmpty;
+    final isVerified = driver['advertisementProofVerified'] == true;
+
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => DriverDetailBottomSheet(driver: driver),
+      isScrollControlled: true,
+      builder: (context) => DriverDetailBottomSheet(
+        driver: driver,
+        adProofPhotoUrl: driver['AddProofPhoto'],
+        isAdProofVerified: isVerified,
+      ),
     );
   }
 
@@ -203,14 +230,25 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
                 children: [
                   // Campaign Poster
                   GestureDetector(
-                    onTap: _viewCampaignPoster,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CampaignImageViewer(
+                            imageUrl: widget.campaign['posterUrl'] ??
+                                'https://via.placeholder.com/600x400?text=No+Poster+Available',
+                            title: 'Campaign Poster',
+                          ),
+                        ),
+                      );
+                    },
                     child: Container(
-                      width: double.infinity,
                       height: 200,
-                      margin: const EdgeInsets.all(16),
+                      width: double.infinity,
+                      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        color: Colors.grey[300],
+                        color: Colors.grey[200], // Fallback background color
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.1),
@@ -218,26 +256,66 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
                             offset: const Offset(0, 3),
                           ),
                         ],
-                        image: DecorationImage(
-                          image: NetworkImage(widget.campaign['posterUrl'] ??
-                              'https://via.placeholder.com/600x400?text=No+Poster+Available'),
-                          fit: BoxFit.cover,
-                        ),
                       ),
-                      child: Align(
-                        alignment: Alignment.bottomRight,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          margin: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.7),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Icon(
-                            Icons.fullscreen,
-                            color: Colors.white,
-                            size: 20,
-                          ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            // Image with error handling
+                            widget.campaign['posterUrl'] != null
+                                ? Image.network(
+                                    widget.campaign['posterUrl']!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      // Show a placeholder on error
+                                      return Container(
+                                        color: Colors.grey[200],
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.image_not_supported,
+                                              size: 50,
+                                              color: Colors.grey[400],
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              'Image unavailable',
+                                              style: TextStyle(color: Colors.grey[600]),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  )
+                                : Container(
+                                    color: Colors.grey[200],
+                                    child: Center(
+                                      child: Text(
+                                        'No Image Available',
+                                        style: TextStyle(color: Colors.grey[600]),
+                                      ),
+                                    ),
+                                  ),
+                            // Fullscreen button overlay
+                            Positioned(
+                              bottom: 8,
+                              right: 8,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.7),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Icon(
+                                  Icons.fullscreen,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -271,25 +349,24 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
                             ),
                           ),
                           const SizedBox(height: 16),
-
                           _infoRow(
                             icon: Icons.date_range,
                             title: 'Start Date',
-                            value: widget.campaign['startDate'] ?? 'Not specified',
+                            value:
+                                widget.campaign['startDate'] ?? 'Not specified',
                             iconColor: accentColor,
                             textColor: textColor,
                           ),
                           const Divider(),
-
                           _infoRow(
                             icon: Icons.event_busy,
                             title: 'End Date',
-                            value: widget.campaign['endDate'] ?? 'Not specified',
+                            value:
+                                widget.campaign['endDate'] ?? 'Not specified',
                             iconColor: accentColor,
                             textColor: textColor,
                           ),
                           const Divider(),
-
                           _infoRow(
                             icon: Icons.credit_card,
                             title: 'Plan',
@@ -298,16 +375,15 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
                             textColor: textColor,
                           ),
                           const Divider(),
-
                           _infoRow(
                             icon: Icons.description,
                             title: 'Description',
-                            value: widget.campaign['description'] ?? 'No description provided',
+                            value: widget.campaign['description'] ??
+                                'No description provided',
                             iconColor: accentColor,
                             textColor: textColor,
                           ),
                           const Divider(),
-
                           _infoRow(
                             icon: Icons.directions_car,
                             title: 'Allocated Drivers',
@@ -317,6 +393,87 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
                           ),
                         ],
                       ),
+                    ),
+                  ),
+
+                  // Driver Locations Map Section
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Driver Locations',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: textColor,
+                              ),
+                            ),
+                            if (_allocatedDrivers.isNotEmpty)
+                              OutlinedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => Scaffold(
+                                        appBar: AppBar(
+                                          title: const Text('Driver Locations'),
+                                          backgroundColor:
+                                              const Color(0xFFFF5722),
+                                        ),
+                                        body: SizedBox(
+                                          height: MediaQuery.of(context)
+                                              .size
+                                              .height,
+                                          child: OpenStreetMapView(
+                                            drivers: _allocatedDrivers,
+                                            fullScreen: true,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                icon: Icon(Icons.fullscreen,
+                                    color: accentColor, size: 18),
+                                label: Text(
+                                  'Fullscreen Map',
+                                  style: TextStyle(color: accentColor),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(color: accentColor),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Container(
+                          height: 300,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey.shade300),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 5,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: OpenStreetMapView(
+                            drivers: _allocatedDrivers,
+                            fullScreen: false,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
 
@@ -334,28 +491,6 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
                             color: textColor,
                           ),
                         ),
-                        if (_allocatedDrivers.isNotEmpty)
-                          OutlinedButton.icon(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => DriverLocationMap(drivers: _allocatedDrivers),
-                                ),
-                              );
-                            },
-                            icon: Icon(Icons.map_outlined, color: accentColor, size: 18),
-                            label: Text(
-                              'View on Map',
-                              style: TextStyle(color: accentColor),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(color: accentColor),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                            ),
-                          ),
                       ],
                     ),
                   ),
@@ -367,7 +502,8 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
                     itemBuilder: (context, index) {
                       final driver = _allocatedDrivers[index];
                       return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 6),
                         decoration: BoxDecoration(
                           color: cardColor,
                           borderRadius: BorderRadius.circular(12),
@@ -400,7 +536,8 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
                             children: [
                               Text(
                                 driver['vehicleNumber'],
-                                style: TextStyle(color: textColor.withOpacity(0.7)),
+                                style: TextStyle(
+                                    color: textColor.withOpacity(0.7)),
                               ),
                               Row(
                                 children: [
@@ -416,6 +553,32 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
                                     ),
                                     child: Text(
                                       _getStatusText(driver['status']),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Container(
+                                    margin: const EdgeInsets.only(top: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          driver['advertisementProofVerified'] ==
+                                                  true
+                                              ? Colors.green
+                                              : Colors.amber,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      driver['advertisementProofVerified'] ==
+                                              true
+                                          ? 'Ad Verified'
+                                          : 'Ad Pending',
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 10,
@@ -451,14 +614,14 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
                       );
                     },
                   ),
-                
-                const SizedBox(height: 24),
-              ],
+
+                  const SizedBox(height: 24),
+                ],
+              ),
             ),
-          ),
     );
   }
-  
+
   Widget _infoRow({
     required IconData icon,
     required String title,

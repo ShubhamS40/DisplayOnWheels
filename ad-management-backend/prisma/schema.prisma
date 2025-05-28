@@ -28,12 +28,15 @@ model DriverRegistration {
   isEmailVerified      Boolean            @default(false)
   isAvailable          Boolean            @default(true)  // Driver availability for campaigns
   currentLocation      Json?              // {lat: number, lng: number}
+  lastLocationUpdate   DateTime?          // <--- This is fine
+
   walletBalance        Float              @default(0)    // Driver earnings
 
   // Relations
   documents            DriverDocuments?
   campaignDrivers      CampaignDriver[]   // Campaigns assigned to this driver
 }
+
 
 model DriverDocuments {
   id                    String   @id @default(uuid())
