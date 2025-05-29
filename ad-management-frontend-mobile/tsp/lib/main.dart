@@ -8,6 +8,7 @@ import 'package:tsp/screens/admin/driver_documentsVerification/driver_lists_not_
 import 'package:tsp/screens/admin/admin_dashboard/screens/admin_management/drivers_livelocation/admin_drivers_map_screen.dart';
 
 import 'package:tsp/screens/auth/role_selection.dart';
+import 'package:tsp/splash_screen/splash_screen.dart';
 
 import 'package:tsp/screens/company/company_document/company_upload_documents.dart';
 import 'package:tsp/screens/company/company_document/company_verification_stage.dart';
@@ -73,14 +74,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       themeMode: ThemeMode.system, // This will follow system theme
-      home: Scaffold(
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: RoleSelectionScreen(),
-          ),
-        ),
-      ),
+      home: const SplashScreen(),
     );
   }
 }
