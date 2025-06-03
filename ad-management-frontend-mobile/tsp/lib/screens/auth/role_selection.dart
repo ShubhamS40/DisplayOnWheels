@@ -6,6 +6,8 @@ import 'package:tsp/screens/admin/admin_auth/admin_login.dart';
 import 'package:tsp/screens/company/company_auth/company_login.dart';
 import 'package:tsp/screens/driver/driver_auth/driver_login.dart';
 import 'package:tsp/utils/theme_constants.dart';
+import 'package:tsp/onboarding/screens/driver_screen.dart';
+import 'package:tsp/onboarding/screens/merged_company_onboarding.dart';
 
 class RoleSelectionScreen extends ConsumerStatefulWidget {
   @override
@@ -65,12 +67,38 @@ class _RoleSelectionScreenState extends ConsumerState<RoleSelectionScreen>
 
     switch (selectedRole) {
       case "Company":
+        // Navigate to merged company onboarding screen
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => CompanyLogin()));
+          context, 
+          MaterialPageRoute(
+            builder: (context) => MergedCompanyOnboardingScreen(
+              onComplete: () {
+                // Navigate to company login after onboarding completes
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => CompanyLogin()),
+                );
+              },
+            ),
+          ),
+        );
         break;
       case "Driver":
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => DriverLoginScreen()));
+        // Navigate to driver onboarding first
+        Navigator.push(
+          context, 
+          MaterialPageRoute(
+            builder: (context) => DriverScreen(
+              onComplete: () {
+                // Navigate to driver login after onboarding completes
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => DriverLoginScreen()),
+                );
+              },
+            ),
+          ),
+        );
         break;
       case "Admin":
         Navigator.push(context,

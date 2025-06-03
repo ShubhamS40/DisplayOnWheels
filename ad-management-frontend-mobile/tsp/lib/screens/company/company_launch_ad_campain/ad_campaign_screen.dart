@@ -158,12 +158,13 @@ class _AdCampaignScreenState extends State<AdCampaignScreen> {
                     _selectedPlan = planName;
                     _selectedPlanPrice = price;
                     _selectedPlanDetails = planDetails;
-                    
+
                     // Store plan duration if available
-                    if (planDetails != null && planDetails.containsKey('durationDays')) {
+                    if (planDetails != null &&
+                        planDetails.containsKey('durationDays')) {
                       _planDuration = '${planDetails['durationDays']} days';
                     }
-                    
+
                     // Update total price based on car count
                     _totalPlanPrice = _selectedPlanPrice * _carCount;
                   });

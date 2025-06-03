@@ -147,7 +147,7 @@ class _CompanyDocumentReuploadScreenState
     try {
       // Use the API endpoint shown in the Postman image
       final uri = Uri.parse(
-          'http://localhost:5000/api/company-docs/update-document/${widget.companyId}');
+          'http://3.110.135.112:5000/api/company-docs/update-document/${widget.companyId}');
 
       // Create a multipart request
       var request = http.MultipartRequest('PUT', uri);

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tsp/screens/auth/role_selection.dart';
+import 'package:tsp/screens/company/company_profile/contact_support_screen.dart';
+import 'package:tsp/screens/company/company_profile/document_view_screen.dart';
+import 'package:tsp/screens/company/company_profile/edit_company_profile_screen.dart';
 import 'package:tsp/services/auth_service.dart';
 import 'settings_card.dart';
 
@@ -40,11 +43,11 @@ class SettingsTab extends StatelessWidget {
                 subtitle: 'Update your company information',
                 iconColor: Colors.blue,
                 onTap: () {
-                  // Navigate to edit profile screen
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content:
-                            Text('Edit profile functionality coming soon')),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const EditCompanyProfileScreen(),
+                    ),
                   );
                 },
               ),
@@ -144,15 +147,30 @@ class SettingsTab extends StatelessWidget {
                 },
               ),
               SettingsItem(
+                icon: Icons.description_outlined,
+                title: 'My Documents',
+                subtitle: 'View your uploaded documents',
+                iconColor: Colors.teal,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DocumentViewScreen(),
+                    ),
+                  );
+                },
+              ),
+              SettingsItem(
                 icon: Icons.support_agent,
                 title: 'Contact Support',
                 subtitle: 'Get in touch with our team',
                 iconColor: Colors.teal,
                 onTap: () {
-                  // Navigate to contact support
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Contact support coming soon')),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ContactSupportScreen(),
+                    ),
                   );
                 },
               ),

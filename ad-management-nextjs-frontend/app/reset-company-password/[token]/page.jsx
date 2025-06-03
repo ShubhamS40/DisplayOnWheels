@@ -24,7 +24,7 @@ export default function ResetPasswordPage() {
     setMessage(null);
 
     try {
-      const res = await fetch('http://localhost:5000/api/company/reset-password', {
+      const res = await fetch('/api/proxy/company-reset-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

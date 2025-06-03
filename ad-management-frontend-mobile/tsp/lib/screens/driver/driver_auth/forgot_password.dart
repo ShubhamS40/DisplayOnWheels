@@ -33,7 +33,7 @@ class _ForgotPasswordDriverScreenState extends State<ForgotPasswordDriverScreen>
     try {
       final dio = Dio();
       final response = await dio.post(
-        'http://localhost:5000/api/driver/forgot-password',
+        'http://3.110.135.112:5000/api/driver/forgot-password',
         data: {
           'email': _emailController.text.trim(),
         },

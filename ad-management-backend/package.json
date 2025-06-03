@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "start:prod": "node index.js"
   },
   "keywords": [],
   "author": "",
@@ -32,6 +33,7 @@
     "nodemailer": "^6.10.1",
     "nodemon": "^3.1.9",
     "openai": "^4.87.3",
+    "redis": "^5.1.1",
     "together-ai": "^0.13.0",
     "uuid": "^11.1.0"
   },

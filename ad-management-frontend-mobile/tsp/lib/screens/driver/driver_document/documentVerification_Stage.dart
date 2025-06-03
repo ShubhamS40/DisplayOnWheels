@@ -59,7 +59,7 @@ class _DocumentStatusScreenState extends State<DocumentStatusScreen> {
     try {
       final response = await http.get(
         Uri.parse(
-            'http://localhost:5000/api/driver/document-status/$_driverId'),
+            'http://3.110.135.112:5000/api/driver/document-status/$_driverId'),
         headers: {
           'Content-Type': 'application/json',
         },

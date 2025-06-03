@@ -18,16 +18,16 @@ class _AdRechargePlanScreenState extends State<AdRechargePlanScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   List<Map<String, dynamic>> _plans = [];
-  
+
   // API endpoint
-  final String baseUrl = 'http://localhost:5000/api/admin-manage';
-  
+  final String baseUrl = 'http://3.110.135.112:5000/api/admin-manage';
+
   @override
   void initState() {
     super.initState();
     _fetchPlans();
   }
-  
+
   Future<void> _fetchPlans() async {
     setState(() {
       _isLoading = true;
@@ -36,7 +36,7 @@ class _AdRechargePlanScreenState extends State<AdRechargePlanScreen> {
 
     try {
       final response = await http.get(Uri.parse('$baseUrl/recharge'));
-      
+
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         setState(() {
@@ -53,7 +53,7 @@ class _AdRechargePlanScreenState extends State<AdRechargePlanScreen> {
       });
     }
   }
-  
+
   // Default plans to use when API fails
   final List<Map<String, dynamic>> _defaultPlans = const [
     {
@@ -120,7 +120,8 @@ class _AdRechargePlanScreenState extends State<AdRechargePlanScreen> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final orangeColor = const Color(0xFFFF5722); // Primary orange color from the memory
+    final orangeColor =
+        const Color(0xFFFF5722); // Primary orange color from the memory
     final backgroundColor = isDarkMode ? Colors.black : Colors.grey[100];
 
     return Scaffold(
@@ -154,47 +155,62 @@ class _AdRechargePlanScreenState extends State<AdRechargePlanScreen> {
               ),
             ),
           ),
-          
+
           // Plans list
           Expanded(
             child: _isLoading
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(color: orangeColor),
-                      const SizedBox(height: 16),
-                      const Text('Loading plans...'),
-                    ],
-                  ),
-                )
-              : _errorMessage != null
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(_errorMessage!, style: TextStyle(color: isDarkMode ? Colors.white70 : Colors.black54)),
+                        CircularProgressIndicator(color: orangeColor),
                         const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          onPressed: _fetchPlans,
-                          style: ElevatedButton.styleFrom(backgroundColor: orangeColor),
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Retry'),
-                        ),
-                        const SizedBox(height: 16),
-                        Text('Showing default plans', style: TextStyle(fontStyle: FontStyle.italic, color: isDarkMode ? Colors.white70 : Colors.black54)),
-                        // Show default plans if API fails
-                        Expanded(
-                          child: _buildPlansList(_defaultPlans),
-                        ),
+                        const Text('Loading plans...'),
                       ],
                     ),
                   )
-                : _plans.isEmpty
-                  ? Center(child: Text('No recharge plans available', style: TextStyle(color: isDarkMode ? Colors.white70 : Colors.black54)))
-                  : _buildPlansList(_plans),
+                : _errorMessage != null
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(_errorMessage!,
+                                style: TextStyle(
+                                    color: isDarkMode
+                                        ? Colors.white70
+                                        : Colors.black54)),
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              onPressed: _fetchPlans,
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: orangeColor),
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Retry'),
+                            ),
+                            const SizedBox(height: 16),
+                            Text('Showing default plans',
+                                style: TextStyle(
+                                    fontStyle: FontStyle.italic,
+                                    color: isDarkMode
+                                        ? Colors.white70
+                                        : Colors.black54)),
+                            // Show default plans if API fails
+                            Expanded(
+                              child: _buildPlansList(_defaultPlans),
+                            ),
+                          ],
+                        ),
+                      )
+                    : _plans.isEmpty
+                        ? Center(
+                            child: Text('No recharge plans available',
+                                style: TextStyle(
+                                    color: isDarkMode
+                                        ? Colors.white70
+                                        : Colors.black54)))
+                        : _buildPlansList(_plans),
           ),
-          
+
           // Checkout button
           if (_selectedPlan != null)
             Padding(
@@ -233,7 +249,7 @@ class _AdRechargePlanScreenState extends State<AdRechargePlanScreen> {
       ),
     );
   }
-  
+
   // Helper method to build the plans list
   Widget _buildPlansList(List<Map<String, dynamic>> plans) {
     return ListView.builder(
@@ -242,26 +258,25 @@ class _AdRechargePlanScreenState extends State<AdRechargePlanScreen> {
       itemBuilder: (context, index) {
         final plan = plans[index];
         final isSelected = _selectedPlanIndex == index;
-        
+
         // Format price for display
-        final priceString = 'Rs ${plan['price']}'
-            .replaceAllMapped(
-                RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-                (Match m) => '${m[1]},');
-        
+        final priceString = 'Rs ${plan['price']}'.replaceAllMapped(
+            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},');
+
         // Extract features
         List<String> features = [];
         if (plan['features'] != null) {
           if (plan['features'] is List) {
             features = (plan['features'] as List)
-                .map((f) => f is Map ? (f['feature']?.toString() ?? '') : f.toString())
+                .map((f) =>
+                    f is Map ? (f['feature']?.toString() ?? '') : f.toString())
                 .where((f) => f.isNotEmpty)
                 .toList();
           } else if (plan['features'] is String) {
             features = [plan['features']];
           }
         }
-        
+
         return PlanCard(
           title: plan['title'] ?? '',
           subtitle: plan['subtitle'] ?? '',
@@ -310,7 +325,8 @@ class PlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final orangeColor = const Color(0xFFFF5722); // Primary orange color from the memory
+    final orangeColor =
+        const Color(0xFFFF5722); // Primary orange color from the memory
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -448,27 +464,28 @@ class PlanCard extends StatelessWidget {
 
               // Plan features
               ...features.map((feature) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.check_circle,
-                      color: orangeColor,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        feature,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isDarkMode ? Colors.white70 : Colors.black87,
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          color: orangeColor,
+                          size: 18,
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            feature,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color:
+                                  isDarkMode ? Colors.white70 : Colors.black87,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              )),
+                  )),
 
               if (note.isNotEmpty) const SizedBox(height: 8),
 

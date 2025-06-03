@@ -146,7 +146,7 @@ class _DocumentReuploadScreenState extends State<DocumentReuploadScreen> {
     try {
       // Use the API endpoint for updating a single document
       final uri = Uri.parse(
-          'http://localhost:5000/api/driver/update-document/${widget.driverId}');
+          'http://3.110.135.112:5000/api/driver/update-document/${widget.driverId}');
 
       // Create a multipart request
       var request = http.MultipartRequest('PUT', uri);

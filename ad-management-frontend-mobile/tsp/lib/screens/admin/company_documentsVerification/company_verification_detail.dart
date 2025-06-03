@@ -34,9 +34,9 @@ class _CompanyVerificationDetailScreenState extends State<CompanyVerificationDet
 
     try {
       final response = await http.get(Uri.parse(
-          'http://localhost:5000/api/admin/company-documents/${widget.companyId}'));
+          'http://3.110.135.112:5000/api/admin/company-documents/${widget.companyId}'));
       
-      print("API URL: http://localhost:5000/api/admin/company-documents/${widget.companyId}");
+      print("API URL: http://3.110.135.112:5000/api/admin/company-documents/${widget.companyId}");
       print("Fetch company documents response: ${response.statusCode}");
       print("Response body: ${response.body}");
 
@@ -120,7 +120,7 @@ class _CompanyVerificationDetailScreenState extends State<CompanyVerificationDet
       
       print("Submitting verification with data: $requestBody");
       
-      final apiUrl = 'http://localhost:5000/api/admin/company-documents/${widget.companyId}/verify';
+      final apiUrl = 'http://3.110.135.112:5000/api/admin/company-documents/${widget.companyId}/verify';
       print("API URL: $apiUrl");
       
       final response = await http.put(

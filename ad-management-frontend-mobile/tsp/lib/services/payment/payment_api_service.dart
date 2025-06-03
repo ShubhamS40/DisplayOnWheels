@@ -6,7 +6,7 @@ import 'package:tsp/models/payment/razorpay_order.dart';
 /// Service for making payment-related API calls to the backend
 class PaymentApiService {
   // Base URL for API calls - replace with your actual backend URL
-  static const String baseUrl = 'http://localhost:5000/api';
+  static const String baseUrl = 'http://3.110.135.112:5000/api';
 
   // Headers for API requests
   Map<String, String> get _headers => {

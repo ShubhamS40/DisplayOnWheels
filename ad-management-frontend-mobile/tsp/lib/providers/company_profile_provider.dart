@@ -34,9 +34,15 @@ class CompanyProfileProvider extends ChangeNotifier {
   
   // Helper methods for accessing specific data
   CompanyBasicDetails? get basicDetails => _companyProfile?.basicDetails;
-  AccountDetails? get accountDetails => _companyProfile?.accountDetails;
-  StatisticsData? get statistics => _companyProfile?.statistics;
+  DocumentDetails? get documentDetails => _companyProfile?.documentDetails;
   List<CampaignData> get campaigns => _companyProfile?.campaigns ?? [];
+  List<PaymentData> get payments => _companyProfile?.payments ?? [];
+  
+  // Helper method to check verification status
+  bool get isVerified => _companyProfile?.documentDetails?.verificationStatus?.overall == "APPROVED";
+  
+  // Helper method to get wallet balance
+  double get walletBalance => _companyProfile?.basicDetails?.walletBalance ?? 0.0;
 
   // Update company profile data
   Future<void> updateCompanyProfile(String companyId, Map<String, dynamic> updatedData) async {

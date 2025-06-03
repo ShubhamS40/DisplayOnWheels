@@ -13,8 +13,21 @@ class CompanyStatisticsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final profileProvider = Provider.of<CompanyProfileProvider>(context);
-    final statistics = profileProvider.statistics;
-    
+
+    // Calculate statistics from campaigns if available
+    final campaigns = profileProvider.campaigns;
+    int totalCampaigns = campaigns.length;
+    int activeCampaigns = campaigns
+        .where((c) =>
+            c.status == 'ACTIVE' ||
+            c.status == 'PENDING_PAYMENT' ||
+            c.status == 'PENDING')
+        .length;
+    int completedCampaigns =
+        campaigns.where((c) => c.status == 'COMPLETED').length;
+    double totalSpent =
+        campaigns.fold(0.0, (sum, campaign) => sum + campaign.totalAmount);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -68,39 +81,42 @@ class CompanyStatisticsSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 1.5,
-            children: [
-              StatCard(
-                title: 'Total Campaigns',
-                value: statistics?.totalCampaigns.toString() ?? '0',
-                icon: Icons.campaign,
-                color: Colors.blue,
-              ),
-              StatCard(
-                title: 'Active Campaigns',
-                value: statistics?.activeCampaigns.toString() ?? '0',
-                icon: Icons.play_circle_fill,
-                color: Colors.green,
-              ),
-              StatCard(
-                title: 'Completed',
-                value: statistics?.completedCampaigns.toString() ?? '0',
-                icon: Icons.check_circle,
-                color: primaryOrange,
-              ),
-              StatCard(
-                title: 'Total Spent',
-                value: '₹${statistics?.totalSpent.toStringAsFixed(2) ?? "0.00"}',
-                icon: Icons.account_balance_wallet,
-                color: Colors.purple,
-              ),
-            ],
+          Container(
+            height: 150,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.bar_chart,
+                  size: 40,
+                  color: Colors.grey[400],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Coming Soon',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Detailed statistics will be available soon',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.grey[500],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ],
       ),

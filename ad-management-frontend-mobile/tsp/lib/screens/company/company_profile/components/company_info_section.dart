@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../../providers/company_profile_provider.dart';
+import '../../../../models/company_profile_model.dart';
 import 'info_item.dart';
 
 class CompanyInfoSection extends StatelessWidget {
-  static const Color primaryOrange = Color(0xFFFF5722); // Using brand orange color
+  static const Color primaryOrange =
+      Color(0xFFFF5722); // Using brand orange color
   static const Color textColor = Color(0xFF2C3E50);
 
   const CompanyInfoSection({Key? key}) : super(key: key);
@@ -14,8 +16,9 @@ class CompanyInfoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final profileProvider = Provider.of<CompanyProfileProvider>(context);
     final basicDetails = profileProvider.basicDetails;
-    final accountDetails = profileProvider.accountDetails;
-    
+    final documentDetails = profileProvider.documentDetails;
+    final companyInfo = documentDetails?.companyInfo;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -42,6 +45,24 @@ class CompanyInfoSection extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           InfoItem(
+            icon: Icons.business,
+            label: 'Business Name',
+            value: basicDetails?.businessName ?? 'Loading...',
+            color: primaryOrange,
+            showAction: true,
+            actionIcon: Icons.edit,
+          ),
+          const Divider(height: 24),
+          InfoItem(
+            icon: Icons.category,
+            label: 'Business Type',
+            value: basicDetails?.businessType ?? 'Loading...',
+            color: Colors.purple,
+            showAction: true,
+            actionIcon: Icons.edit,
+          ),
+          const Divider(height: 24),
+          InfoItem(
             icon: Icons.phone,
             label: 'Phone',
             value: basicDetails?.contactNumber ?? 'Loading...',
@@ -62,39 +83,43 @@ class CompanyInfoSection extends StatelessWidget {
           InfoItem(
             icon: Icons.location_on,
             label: 'Address',
-            value: basicDetails?.address ?? 'Loading...',
+            value: companyInfo?.address ?? 'Not provided',
             color: Colors.red,
             showAction: true,
             actionIcon: Icons.edit,
           ),
           const Divider(height: 24),
           InfoItem(
-            icon: Icons.numbers,
-            label: 'Registration Number',
-            value: basicDetails?.registrationNumber ?? 'Loading...',
-            color: Colors.purple,
-          ),
-          const Divider(height: 24),
-          InfoItem(
-            icon: Icons.workspace_premium,
-            label: 'Subscription Plan',
-            value: accountDetails?.planType ?? 'No Plan',
-            color: primaryOrange,
+            icon: Icons.location_city,
+            label: 'City, State',
+            value: '${companyInfo?.city ?? 'Not provided'}, ${companyInfo?.state ?? ''}',
+            color: Colors.teal,
             showAction: true,
-            actionIcon: Icons.upgrade,
+            actionIcon: Icons.edit,
           ),
           const Divider(height: 24),
           InfoItem(
-            icon: Icons.calendar_today,
-            label: 'Plan Expiry',
-            value: accountDetails?.planExpiryDate ?? 'N/A',
+            icon: Icons.public,
+            label: 'Country',
+            value: companyInfo?.country ?? 'Not provided',
+            color: Colors.indigo,
+            showAction: true,
+            actionIcon: Icons.edit,
+          ),
+          const Divider(height: 24),
+          InfoItem(
+            icon: Icons.pin_drop,
+            label: 'Zip Code',
+            value: companyInfo?.zipCode ?? 'Not provided',
             color: Colors.amber,
+            showAction: true,
+            actionIcon: Icons.edit,
           ),
           const Divider(height: 24),
           InfoItem(
             icon: Icons.account_balance_wallet,
             label: 'Wallet Balance',
-            value: '₹${basicDetails?.walletBalance.toStringAsFixed(2) ?? '0.00'}',
+            value: '₹${profileProvider.walletBalance.toStringAsFixed(2)}',
             color: Colors.green,
             showAction: true,
             actionIcon: Icons.add,

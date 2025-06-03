@@ -40,10 +40,11 @@ class _VehicleTypeSelectorState extends State<VehicleTypeSelector> {
                   selectedColor: AdCampaignTheme.primaryOrange,
                   backgroundColor: Colors.grey.shade200,
                   labelStyle: TextStyle(
-                    color: isSelected 
+                    color: isSelected
                         ? AdCampaignTheme.primaryWhite
                         : AdCampaignTheme.textPrimary,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                   onSelected: (selected) {
                     setState(() {

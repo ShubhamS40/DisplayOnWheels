@@ -26,7 +26,7 @@ class _PosterDesignInfoState extends State<PosterDesignInfo> {
   int _wordCount = 0;
   bool _isValidWordCount = false;
   final int _requiredWordCount = 300;
-  
+
   // Poster sizes with prices
   final Map<String, double> _posterSizePrices = {
     'A2': 7500.0,
@@ -34,7 +34,7 @@ class _PosterDesignInfoState extends State<PosterDesignInfo> {
     'A4': 3500.0,
     'A5': 2500.0,
   };
-  
+
   @override
   void initState() {
     super.initState();
@@ -42,13 +42,13 @@ class _PosterDesignInfoState extends State<PosterDesignInfo> {
     // Initialize with A3 price
     widget.onPosterPriceUpdated(_posterSizePrices[_selectedSize] ?? 0);
   }
-  
+
   @override
   void dispose() {
     widget.notesController.removeListener(_updateWordCount);
     super.dispose();
   }
-  
+
   void _updateWordCount() {
     final text = widget.notesController.text.trim();
     if (text.isEmpty) {
@@ -58,11 +58,11 @@ class _PosterDesignInfoState extends State<PosterDesignInfo> {
       });
       return;
     }
-    
+
     // Count words by splitting on whitespace
     final words = text.split(RegExp(r'\s+'));
     final nonEmptyWords = words.where((word) => word.isNotEmpty).length;
-    
+
     setState(() {
       _wordCount = nonEmptyWords;
       _isValidWordCount = nonEmptyWords >= _requiredWordCount;
@@ -79,7 +79,8 @@ class _PosterDesignInfoState extends State<PosterDesignInfo> {
           decoration: BoxDecoration(
             color: AdCampaignTheme.secondaryBackground,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AdCampaignTheme.primaryOrange.withOpacity(0.3)),
+            border: Border.all(
+                color: AdCampaignTheme.primaryOrange.withOpacity(0.3)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,7 +105,6 @@ class _PosterDesignInfoState extends State<PosterDesignInfo> {
           ),
         ),
         const SizedBox(height: 20),
-        
         const Text(
           'Poster Title (Optional)',
           style: AdCampaignTheme.subheadingStyle,
@@ -118,7 +118,6 @@ class _PosterDesignInfoState extends State<PosterDesignInfo> {
           ),
         ),
         const SizedBox(height: 20),
-        
         const Text(
           'Details/Notes about Poster Design*',
           style: AdCampaignTheme.subheadingStyle,
@@ -144,7 +143,8 @@ class _PosterDesignInfoState extends State<PosterDesignInfo> {
           },
           decoration: AdCampaignTheme.inputDecoration(
             '',
-            hintText: 'Describe in detail what you want in your poster. Include information about your brand, target audience, key messaging, and any specific requirements.',
+            hintText:
+                'Describe in detail what you want in your poster. Include information about your brand, target audience, key messaging, and any specific requirements.',
           ),
         ),
         Padding(
@@ -159,7 +159,6 @@ class _PosterDesignInfoState extends State<PosterDesignInfo> {
           ),
         ),
         const SizedBox(height: 10),
-        
         const Text(
           'Select Your Poster Size',
           style: AdCampaignTheme.subheadingStyle,
@@ -175,8 +174,10 @@ class _PosterDesignInfoState extends State<PosterDesignInfo> {
             child: DropdownButton<String>(
               isExpanded: true,
               value: _selectedSize,
-              icon: const Icon(Icons.arrow_drop_down, color: AdCampaignTheme.primaryOrange),
-              style: const TextStyle(color: AdCampaignTheme.textPrimary, fontSize: 16),
+              icon: const Icon(Icons.arrow_drop_down,
+                  color: AdCampaignTheme.primaryOrange),
+              style: const TextStyle(
+                  color: AdCampaignTheme.textPrimary, fontSize: 16),
               onChanged: (String? value) {
                 if (value != null) {
                   setState(() {
@@ -186,7 +187,8 @@ class _PosterDesignInfoState extends State<PosterDesignInfo> {
                   widget.onPosterPriceUpdated(_posterSizePrices[value] ?? 0);
                 }
               },
-              items: _posterSizePrices.entries.map<DropdownMenuItem<String>>((entry) {
+              items: _posterSizePrices.entries
+                  .map<DropdownMenuItem<String>>((entry) {
                 return DropdownMenuItem<String>(
                   value: entry.key,
                   child: Row(
@@ -254,7 +256,6 @@ class _PosterDesignInfoState extends State<PosterDesignInfo> {
             ],
           ),
         ),
-        
         const SizedBox(height: 10),
         Container(
           padding: const EdgeInsets.all(12),

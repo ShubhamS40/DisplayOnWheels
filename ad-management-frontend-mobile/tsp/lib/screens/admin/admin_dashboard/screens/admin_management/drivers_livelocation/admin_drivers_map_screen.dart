@@ -60,7 +60,7 @@ class _AdminDriversMapScreenState extends State<AdminDriversMapScreen> {
     try {
       final response = await http.get(
         Uri.parse(
-            'http://localhost:5000/api/admin/drivers-locations/all-drivers-locations'),
+            'http://3.110.135.112:5000/api/admin/drivers-locations/all-drivers-locations'),
         headers: {'Content-Type': 'application/json'},
       );
 

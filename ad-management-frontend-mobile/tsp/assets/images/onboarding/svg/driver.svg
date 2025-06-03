@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Placeholder SVG for Driver - Replace with Freepik illustration -->
+  <rect width="100%" height="100%" fill="#ffffff" />
+  
+  <!-- Car outline -->
+  <path d="M150,300 L350,300 L330,230 L170,230 Z" fill="#F5F5F5" stroke="#424242" stroke-width="2" />
+  <path d="M170,230 L190,180 L310,180 L330,230" stroke="#424242" stroke-width="2" fill="#F5F5F5" />
+  <rect x="165" y="270" width="30" height="15" rx="7.5" fill="#424242" />
+  <rect x="305" y="270" width="30" height="15" rx="7.5" fill="#424242" />
+  
+  <!-- Driver -->
+  <circle cx="250" cy="210" r="25" fill="#E89C08" />
+  <path d="M250,235 L250,265" stroke="#E89C08" stroke-width="4" />
+  <path d="M235,245 L250,235 L265,245" stroke="#E89C08" stroke-width="4" fill="none" />
+  <path d="M235,265 L265,265" stroke="#E89C08" stroke-width="4" />
+  
+  <!-- Ad poster -->
+  <rect x="220" y="120" width="60" height="40" fill="#FF5722" />
+  <path d="M220,120 L220,160 L185,170 Z" fill="#FF5722" opacity="0.8" />
+  <path d="M280,120 L280,160 L315,170 Z" fill="#FF5722" opacity="0.8" />
+  
+  <!-- Money symbol -->
+  <circle cx="350" cy="150" r="30" fill="#4CAF50" opacity="0.8" />
+  <text x="350" y="158" font-family="Arial" font-size="30" font-weight="bold" text-anchor="middle" fill="#ffffff">$</text>
+  
+  <text x="256" y="350" font-family="Arial" font-size="20" text-anchor="middle" fill="#333333">Replace with Freepik SVG</text>
+</svg>

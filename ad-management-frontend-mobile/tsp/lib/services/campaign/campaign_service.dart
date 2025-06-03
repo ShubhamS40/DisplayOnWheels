@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http_parser/http_parser.dart';
@@ -11,9 +12,11 @@ import 'package:path/path.dart' as path;
 import 'package:tsp/utils/constants.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:intl/intl.dart';
-
 // Import the constants from the constants file
 import 'package:tsp/utils/constants.dart' as app_constants;
+
+// Import the rechargePlanIdProvider
+import 'package:tsp/screens/company/company_launch_ad_campain/components/plan_selector_button.dart';
 
 // Campaign service-specific constants
 class CampaignServiceConfig {
@@ -176,6 +179,7 @@ class CampaignService {
   // Create campaign using HTTP directly to match Postman exactly
   Future<Map<String, dynamic>> launchCampaign({
     required Map<String, dynamic> campaignData,
+    WidgetRef? ref,
     String? paymentId,
     Function(double)? onProgressUpdate,
   }) async {
@@ -193,26 +197,20 @@ class CampaignService {
         };
       }
 
-      // Handle planId with better fallback logic
-      // Always ensure we have a valid plan ID (minimum 1)
-      final dynamic rawPlanId = campaignData['planId'];
-      final int planId;
-
-      if (rawPlanId != null) {
-        // Convert to int if it's a string
-        if (rawPlanId is String) {
-          planId = int.tryParse(rawPlanId) ?? 4;
+      // Get planId from StateProvider if ref is provided, otherwise use default
+      int planId = 6; // Default fallback
+      
+      if (ref != null) {
+        final planIdString = ref.read(rechargePlanIdProvider);
+        if (planIdString != null && planIdString.isNotEmpty) {
+          planId = int.tryParse(planIdString) ?? 6;
+          debugPrint('Using plan ID from provider: $planId');
         } else {
-          planId = rawPlanId as int;
+          debugPrint('Plan ID not found in provider, using default: $planId');
         }
       } else {
-        // Use fallback logic
-        planId = _extractPlanId(campaignData['selectedPlan']) ?? 4;
+        debugPrint('WidgetRef not provided, using default plan ID: $planId');
       }
-
-      // Always default to plan ID 4 if plan is not valid
-      final validPlanId = (planId < 1 || planId > 10) ? 4 : planId;
-      debugPrint('Using plan ID: $validPlanId');
 
       // Calculate total with null safety
       final carCount = campaignData['carCount'] ?? 0;
@@ -237,7 +235,7 @@ class CampaignService {
 
       // Add all fields exactly as they appear in Postman
       request.fields['companyId'] = companyId;
-      request.fields['planId'] = validPlanId.toString();
+      request.fields['planId'] = planId.toString(); // Hardcoded to 6
       request.fields['title'] = campaignData['adTitle'] ?? 'Campaign';
       request.fields['description'] = campaignData['adDescription'] ??
           campaignData['adTitle'] ??
@@ -407,17 +405,8 @@ class CampaignService {
   }
 
   int? _extractPlanId(String? planName) {
-    if (planName == null) return 4; // Default to plan ID 4 if null
-    switch (planName.toLowerCase()) {
-      case 'basic':
-        return 1;
-      case 'standard':
-        return 2;
-      case 'premium':
-        return 3;
-      default:
-        return 4; // Default to plan ID 4 for unknown plan names
-    }
+    // Always return 6 regardless of the plan name
+    return 6;
   }
 
   Future<List<dynamic>> getCompanyCampaigns() async {

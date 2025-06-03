@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tsp/screens/company/company_launch_ad_campain/components/theme_constants.dart';
 import 'package:tsp/screens/company/company_recharge_plan/ad_recharge_plan_screen.dart';
 
-class PlanSelectorButton extends StatelessWidget {
+// Your existing provider
+final rechargePlanIdProvider = StateProvider<String?>((ref) => null);
+
+class PlanSelectorButton extends ConsumerWidget {
   final String? selectedPlan;
   final Function(String, int, Map<String, dynamic>?) onPlanSelected;
-  
+
   // Enhanced constructor to handle detailed plan data
   const PlanSelectorButton({
     Key? key,
@@ -14,7 +18,10 @@ class PlanSelectorButton extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the provider to get current selected plan ID
+    final selectedPlanId = ref.watch(rechargePlanIdProvider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -38,6 +45,13 @@ class PlanSelectorButton extends StatelessWidget {
               );
 
               if (result != null && result is Map<String, dynamic>) {
+                // Set the planId in the provider state
+                final planId =
+                    result['planId']?.toString() ?? result['id']?.toString();
+                if (planId != null) {
+                  ref.read(rechargePlanIdProvider.notifier).state = planId;
+                }
+
                 // Process the selected plan data with detailed plan information
                 onPlanSelected(
                   result['planName'] ?? '',
@@ -54,7 +68,9 @@ class PlanSelectorButton extends StatelessWidget {
                 Text(
                   selectedPlan != null && selectedPlan!.isNotEmpty
                       ? selectedPlan!
-                      : 'Choose Your Plan',
+                      : selectedPlanId != null
+                          ? 'Plan ID: $selectedPlanId Selected'
+                          : 'Choose Your Plan',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

@@ -98,6 +98,9 @@ class _DriverLiveLocationState extends State<DriverLiveLocation>
       await _locationService.initialize();
       await _bluetoothService.initialize();
       
+      // Add a delay before starting location sharing to ensure map is ready
+      await Future.delayed(const Duration(milliseconds: 500));
+      
       if (_locationService.currentLocation != null) {
         developer.log(
           'Services initialized. Location: ${_locationService.currentLocation?.latitude}, ${_locationService.currentLocation?.longitude}',
@@ -277,10 +280,13 @@ class _DriverLiveLocationState extends State<DriverLiveLocation>
             onMapReady: () {
               // This will be called when the map is fully rendered and ready
               developer.log("Map is fully ready and rendered", name: 'DriverLiveLocation');
-              setState(() {
-                _mapReady = true;
-                _isMapLoading = false;
-              });
+              
+              if (mounted) {
+                setState(() {
+                  _mapReady = true;
+                  _isMapLoading = false;
+                });
+              }
               
               // Show current location in a snackbar even if map navigation fails
               if (_locationService.currentLocation != null) {
@@ -294,9 +300,10 @@ class _DriverLiveLocationState extends State<DriverLiveLocation>
               // Now it's safe to navigate to current location
               if (_locationService.currentLocation != null) {
                 try {
-                  // Wait a moment to ensure map is fully rendered
-                  Future.delayed(Duration(milliseconds: 500), () {
+                  // Wait a longer moment to ensure map is fully rendered and stable
+                  Future.delayed(Duration(milliseconds: 800), () {
                     if (mounted) {
+                      developer.log("Attempting to navigate to current location after map ready", name: 'DriverLiveLocation');
                       _locationService.goToCurrentLocation(_mapController);
                     }
                   });
@@ -330,6 +337,7 @@ class _DriverLiveLocationState extends State<DriverLiveLocation>
             onShowBluetoothPanel: _toggleBluetoothPanel,
             isBluetoothOn: _bluetoothService.isBluetoothOn,
             isTargetDeviceConnected: _bluetoothService.isTargetDeviceConnected,
+            manuallyStoppedByDriver: _locationService.manuallyStoppedByDriver, // Pass the new flag
             storedInRedis: _locationService.storedInRedis,
             storedInDatabase: _locationService.storedInDatabase,
             nextDatabaseUpdateIn: _locationService.nextDatabaseUpdateIn,

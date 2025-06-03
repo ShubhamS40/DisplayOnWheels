@@ -3,8 +3,8 @@ import 'package:flutter/foundation.dart';
 class Constants {
   // API Base URL - Use localhost for development and actual API for production
   static String get baseUrl => kIsWeb
-      ? 'http://localhost:5000' // Web development URL
-      : 'http://localhost:5000'; // Mobile development URL
+      ? 'http://3.110.135.112:5000' // Web development URL
+      : 'http://3.110.135.112:5000'; // Mobile development URL
   
   // Production URL - uncomment when deploying to production
   // static const String baseUrl = 'https://tsp-api-prod.com';

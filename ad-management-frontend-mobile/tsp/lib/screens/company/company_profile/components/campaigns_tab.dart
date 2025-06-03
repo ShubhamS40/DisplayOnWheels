@@ -14,7 +14,7 @@ class CampaignsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final profileProvider = Provider.of<CompanyProfileProvider>(context);
     final campaigns = profileProvider.campaigns;
-    
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -52,7 +52,7 @@ class CampaignsTab extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Filter chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -65,31 +65,10 @@ class CampaignsTab extends StatelessWidget {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Campaigns list
-          campaigns.isEmpty
-              ? _buildEmptyCampaignsState()
-              : ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: campaigns.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final campaign = campaigns[index];
-                    return CampaignCard(
-                      id: campaign.id,
-                      title: campaign.title,
-                      status: campaign.status,
-                      budget: campaign.budget,
-                      startDate: campaign.startDate,
-                      endDate: campaign.endDate,
-                      assignedDrivers: campaign.assignedDrivers,
-                      posterUrl: campaign.posterUrl,
-                    );
-                  },
-                ),
         ],
       ),
     );

@@ -221,7 +221,7 @@ class _CompanySignUpScreenState extends State<CompanySignUpScreen> {
         setState(() => _isLoading = true);
         
         final response = await dio.post(
-          'http://localhost:5000/api/company/register',
+          'http://3.110.135.112:5000/api/company/register',
           data: {
             'businessName': businessNameController.text.trim(),
             'businessType': selectedBusinessType,

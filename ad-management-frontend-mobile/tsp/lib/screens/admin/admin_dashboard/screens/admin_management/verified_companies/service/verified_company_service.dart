@@ -18,7 +18,7 @@ class VerifiedCompanyService {
       // Fetching verified companies from the API
       final response = await http.get(
         Uri.parse(
-            'http://localhost:5000/api/admin/view-all-companies/company-list'),
+            'http://3.110.135.112:5000/api/admin/view-all-companies/company-list'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

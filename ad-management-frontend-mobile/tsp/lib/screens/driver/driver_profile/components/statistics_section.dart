@@ -68,43 +68,42 @@ class StatisticsSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 1.5,
-            children: [
-              StatCard(
-                title: 'Earnings',
-                value: statsData['earnings']['value'],
-                change: statsData['earnings']['change'],
-                icon: Icons.attach_money,
-                color: Colors.green,
-              ),
-              StatCard(
-                title: 'Trips',
-                value: statsData['trips']['value'],
-                change: statsData['trips']['change'],
-                icon: Icons.directions_car,
-                color: Colors.blue,
-              ),
-              StatCard(
-                title: 'Hours',
-                value: statsData['hours']['value'],
-                change: statsData['hours']['change'],
-                icon: Icons.access_time,
-                color: Colors.orange,
-              ),
-              StatCard(
-                title: 'Rating',
-                value: statsData['rating']['value'],
-                change: statsData['rating']['change'],
-                icon: Icons.star,
-                color: Colors.amber,
-              ),
-            ],
+          Container(
+            height: 150,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.analytics_outlined,
+                  size: 40,
+                  color: Colors.grey[400],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Coming Soon',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Driver statistics will be available soon',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.grey[500],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ],
       ),

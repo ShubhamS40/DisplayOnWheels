@@ -27,8 +27,8 @@ class _CompanyDocumentStatusScreenState
 
   // API Config class for consistent URLs
   static String get baseUrl => kIsWeb
-      ? 'http://localhost:5000' // For web browser testing
-      : 'http://10.0.2.2:5000'; // For emulator testing
+      ? 'http://3.110.135.112:5000' // For web browser testing
+      : 'http://3.110.135.112:5000'; // For emulator testing
 
   @override
   void initState() {

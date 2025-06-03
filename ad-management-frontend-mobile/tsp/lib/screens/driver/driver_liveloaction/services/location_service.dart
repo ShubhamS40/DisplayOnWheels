@@ -12,12 +12,13 @@ class LocationService {
   final Location _location = Location();
   LocationData? _currentLocation;
   bool _isSharing = false;
+  bool _manuallyStoppedByDriver = false; // New flag to track if driver manually stopped sharing
   String _sharingStatus = "Not sharing";
   String _lastUpdated = "";
   final Function(String) showSnackBar;
   Timer? _locationUpdateTimer;
   String? _driverId;
-  final String _apiEndpoint = "http://localhost:5000/api/driver-location/update-location";
+  final String _apiEndpoint = "http://3.110.135.112:5000/api/driver-location/update-location";
   
   // Storage status information
   bool? _storedInRedis;
@@ -25,6 +26,9 @@ class LocationService {
   double? _nextDatabaseUpdateIn;
   
   LocationService({required this.showSnackBar});
+  
+  // Getter for manually stopped flag
+  bool get manuallyStoppedByDriver => _manuallyStoppedByDriver;
 
   bool get isSharing => _isSharing;
   String get sharingStatus => _sharingStatus;
@@ -176,6 +180,7 @@ class LocationService {
   // Start sharing location
   void startLocationSharing(MapController mapController) {
     _isSharing = true;
+    _manuallyStoppedByDriver = false; // Reset the flag when starting sharing
     _sharingStatus = "Sharing";
     _lastUpdated = "Started just now";
     developer.log('Starting location sharing', name: 'LocationService');
@@ -198,7 +203,11 @@ class LocationService {
         _locationUpdateTimer = Timer.periodic(Duration(seconds: 1), (timer) {
           if (_isSharing) {
             _sendLocationToServer();
+          } else if (!_manuallyStoppedByDriver) {
+            // If sharing is off but not manually stopped by driver, continue in background
+            _sendLocationToServer();
           } else {
+            // Only cancel the timer if manually stopped by driver
             timer.cancel();
           }
         });
@@ -212,12 +221,13 @@ class LocationService {
   // Stop sharing location
   void stopLocationSharing() {
     _isSharing = false;
+    _manuallyStoppedByDriver = true; // Set flag to indicate driver manually stopped sharing
     _sharingStatus = "Not sharing";
     _lastUpdated = "";
     // Cancel the timer to stop sending location updates
     _locationUpdateTimer?.cancel();
     _locationUpdateTimer = null;
-    developer.log('Stopped location sharing and updates to server', name: 'LocationService');
+    developer.log('Stopped location sharing and updates to server (manually by driver)', name: 'LocationService');
   }
   
   // Go to current location
@@ -244,20 +254,37 @@ class LocationService {
           // Display coordinates to the user
           showSnackBar("Your location: ${_currentLocation!.latitude!.toStringAsFixed(6)}, ${_currentLocation!.longitude!.toStringAsFixed(6)}");
           
-          try {
-            // Move map to current location with animation
-            mapController.move(newCenter, 18.0); // Using fixed zoom level 18 for detailed view
-          } catch (e) {
-            developer.log("Error with map camera: $e", name: 'LocationService');
-            // Try again with a delay - map might need time to initialize fully
-            await Future.delayed(Duration(milliseconds: 500));
+          // Implement a more robust retry mechanism with multiple attempts
+          bool mapMoved = false;
+          int maxAttempts = 3;
+          
+          for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
-              mapController.move(newCenter, 15.0);
-            } catch (e2) {
-              developer.log("Second attempt to move map failed: $e2", name: 'LocationService');
-              showSnackBar("Map not ready yet. Please try again in a moment.");
-              return;
+              // Move map to current location with animation
+              developer.log("Attempt $attempt to move map to current location", name: 'LocationService');
+              
+              // Add a small delay before each attempt
+              await Future.delayed(Duration(milliseconds: 300 * attempt));
+              
+              // Try to move the map with decreasing zoom levels for better success rate
+              double zoomLevel = 18.0 - (attempt - 1) * 1.0; // 18.0, 17.0, 16.0
+              mapController.move(newCenter, zoomLevel);
+              
+              mapMoved = true;
+              developer.log("Successfully moved map on attempt $attempt", name: 'LocationService');
+              break;
+            } catch (e) {
+              developer.log("Attempt $attempt failed: $e", name: 'LocationService');
+              
+              if (attempt == maxAttempts) {
+                showSnackBar("Map not ready yet. Please wait a moment and try again.");
+                return;
+              }
             }
+          }
+          
+          if (!mapMoved) {
+            showSnackBar("Could not navigate to your location. Map may not be fully initialized.");
           }
         } catch (e) {
           developer.log("Error navigating to current location: $e", name: 'LocationService');
@@ -301,8 +328,10 @@ class LocationService {
   void toggleLocationSharing(MapController mapController) {
     if (_isSharing) {
       stopLocationSharing();
+      showSnackBar('Location sharing stopped. Note: Your location will continue to be shared in the background unless you exit the app.');
     } else {
       startLocationSharing(mapController);
+      showSnackBar('Location sharing started. Your location will be shared even when the button is toggled off.');
     }
   }
 }

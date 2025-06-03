@@ -19,7 +19,7 @@ class _CompanyOtpVerificationScreenState
   bool isLoading = false;
   String message = '';
 
-  final String baseUrl = "http://localhost:5000/api/company";
+  final String baseUrl = "http://3.110.135.112:5000/api/company";
 
   @override
   void initState() {

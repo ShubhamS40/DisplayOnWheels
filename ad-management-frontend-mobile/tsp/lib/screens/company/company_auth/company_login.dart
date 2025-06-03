@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tsp/provider/providers.dart';
 import 'package:tsp/screens/company/company_auth/company_signup.dart';
 import 'package:tsp/screens/company/company_auth/company_forgot_password.dart';
 import 'package:tsp/screens/company/company_document/company_upload_documents.dart';
@@ -12,14 +14,14 @@ import 'dart:convert';
 
 import 'package:tsp/screens/company/company_main_screen/company_main_screen.dart';
 
-class CompanyLogin extends StatefulWidget {
+class CompanyLogin extends ConsumerStatefulWidget {
   const CompanyLogin({super.key});
 
   @override
-  State<CompanyLogin> createState() => _LoginScreenState();
+  ConsumerState<CompanyLogin> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<CompanyLogin> {
+class _LoginScreenState extends ConsumerState<CompanyLogin> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -40,7 +42,7 @@ class _LoginScreenState extends State<CompanyLogin> {
       // First check if the company has submitted documents
       final docsSubmittedResponse = await http.get(
         Uri.parse(
-            'http://localhost:5000/api/company-docs/has-submitted-documents/$companyId'),
+            'http://3.110.135.112:5000/api/company-docs/has-submitted-documents/$companyId'),
         headers: {"Content-Type": "application/json"},
       );
 
@@ -65,7 +67,7 @@ class _LoginScreenState extends State<CompanyLogin> {
       // If documents have been submitted, check verification status
       final docStatusResponse = await http.get(
         Uri.parse(
-            'http://localhost:5000/api/company-docs/document-status/$companyId'),
+            'http://3.110.135.112:5000/api/company-docs/document-status/$companyId'),
         headers: {"Content-Type": "application/json"},
       );
 
@@ -147,7 +149,7 @@ class _LoginScreenState extends State<CompanyLogin> {
       print('Attempting to login with email: ${emailController.text}');
 
       final response = await dio.post(
-        'http://localhost:5000/api/company/login',
+        'http://3.110.135.112:5000/api/company/login',
         data: {
           'email': emailController.text.trim(),
           'password': passwordController.text,
@@ -185,6 +187,9 @@ class _LoginScreenState extends State<CompanyLogin> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', token);
         await prefs.setString('companyId', companyId);
+        
+        // Set companyId in the provider
+        ref.read(companyIdProvider.notifier).state = companyId;
 
         print('Login successful! Token and companyId saved');
 

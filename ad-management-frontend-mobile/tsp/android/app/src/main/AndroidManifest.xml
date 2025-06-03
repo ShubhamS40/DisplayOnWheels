@@ -19,7 +19,7 @@
     <application
          android:usesCleartextTraffic="true"
     android:requestLegacyExternalStorage="true"
-        android:label="TSP"
+        android:label="Display on Wheels"
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/LaunchTheme">
         

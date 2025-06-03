@@ -221,7 +221,7 @@ class _DriverSignUpScreenState extends State<DriverSignUpScreen> {
       try {
         final dio = Dio();
         final response = await dio.post(
-          'http://localhost:5000/api/driver/register',
+          'http://3.110.135.112:5000/api/driver/register',
           data: {
             'fullName': fullNameController.text.trim(),
             'email': emailPhoneController.text.trim(),

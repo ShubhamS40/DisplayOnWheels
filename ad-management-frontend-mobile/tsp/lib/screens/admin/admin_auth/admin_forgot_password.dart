@@ -16,7 +16,7 @@ class _AdminForgotPasswordScreenState extends State<AdminForgotPasswordScreen> {
   String? successMessage;
 
   final Dio _dio = Dio(BaseOptions(
-    baseUrl: "http://localhost:5000/api",
+    baseUrl: "http://3.110.135.112:5000/api",
     connectTimeout: Duration(milliseconds: 5000),
     receiveTimeout: Duration(milliseconds: 3000),
   ));

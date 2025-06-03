@@ -30,7 +30,7 @@ class _DriverOtpVerificationScreenState
     try {
       final dio = Dio();
       final response = await dio.post(
-        'http://localhost:5000/api/driver/verify-email',
+        'http://3.110.135.112:5000/api/driver/verify-email',
         data: {
           'email': widget.emailOrPhone,
           'otp': otpController.text,
@@ -57,7 +57,7 @@ class _DriverOtpVerificationScreenState
     try {
       final dio = Dio();
       final response = await dio.post(
-        'http://localhost:5000/api/driver/resend-otp',
+        'http://3.110.135.112:5000/api/driver/resend-otp',
         data: {
           'email': widget.emailOrPhone,
         },

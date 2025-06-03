@@ -18,8 +18,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiConfig {
   // Base URL for API calls
   static String baseUrl = kIsWeb
-      ? 'http://localhost:5000' // For web browser testing
-      : 'http://10.0.2.2:5000'; // For emulator testing
+      ? 'http://3.110.135.112:5000' // For web browser testing
+      : 'http://3.110.135.112:5000'; // For emulator testing
 
   // Company document upload endpoint
   static String get uploadCompanyDocumentsUrl =>

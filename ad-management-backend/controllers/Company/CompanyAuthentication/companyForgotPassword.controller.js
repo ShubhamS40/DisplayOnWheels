@@ -49,7 +49,7 @@ const forgotPasswordCompany = async (req, res) => {
     });
 
     // Prepare reset link
-    const resetLink = `http://localhost:3000/reset-company-password/${token}`;
+    const resetLink = `https://displayonwheels.com/reset-company-password/${token}`;
 
     // Send email
     const transporter = nodemailer.createTransport({

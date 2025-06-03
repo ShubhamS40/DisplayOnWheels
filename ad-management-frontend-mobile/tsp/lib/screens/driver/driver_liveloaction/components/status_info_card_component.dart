@@ -8,6 +8,7 @@ class StatusInfoCardComponent extends StatelessWidget {
   final Color successColor;
   final Color cardColor;
   final bool isTargetDeviceConnected;
+  final bool manuallyStoppedByDriver; // New parameter to track if driver manually stopped sharing
   
   // Storage info
   final bool? storedInRedis;
@@ -22,6 +23,7 @@ class StatusInfoCardComponent extends StatelessWidget {
     required this.successColor,
     required this.cardColor,
     required this.isTargetDeviceConnected,
+    this.manuallyStoppedByDriver = false, // Default to false
     this.storedInRedis,
     this.storedInDatabase,
     this.nextDatabaseUpdateIn,
@@ -53,12 +55,15 @@ class StatusInfoCardComponent extends StatelessWidget {
               Container(
                 padding: EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isSharing ? successColor.withOpacity(0.1) : Colors.grey.shade100,
+                  color: isSharing ? successColor.withOpacity(0.1) : 
+                         !manuallyStoppedByDriver ? Colors.orange.withOpacity(0.1) : Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                  isSharing ? Icons.location_on : Icons.location_off,
-                  color: isSharing ? successColor : Colors.grey,
+                  isSharing ? Icons.location_on : 
+                  !manuallyStoppedByDriver ? Icons.location_searching : Icons.location_off,
+                  color: isSharing ? successColor : 
+                         !manuallyStoppedByDriver ? Colors.orange : Colors.grey,
                   size: 20,
                 ),
               ),
@@ -67,7 +72,8 @@ class StatusInfoCardComponent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Status: $sharingStatus',
+                    isSharing ? 'Status: $sharingStatus' : 
+                    !manuallyStoppedByDriver ? 'Status: Background Sharing' : 'Status: $sharingStatus',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -82,13 +88,22 @@ class StatusInfoCardComponent extends StatelessWidget {
                         color: Colors.grey.shade600,
                       ),
                     ),
+                  if (!isSharing && !manuallyStoppedByDriver)
+                    Text(
+                      'Location is still being shared in background',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.orange,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                 ],
               ),
             ],
           ),
           SizedBox(height: 12),
           // Storage Info
-          if (isSharing && storedInRedis != null)
+          if ((isSharing || !manuallyStoppedByDriver) && storedInRedis != null)
             _buildStorageInfoRow(),
           SizedBox(height: 12),
           _buildDeviceStatusRow(),

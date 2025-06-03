@@ -12,7 +12,7 @@ class CampaignCard extends StatelessWidget {
   final double budget;
   final String startDate;
   final String endDate;
-  final int assignedDrivers;
+  final List<dynamic> assignedDrivers;
   final String posterUrl;
 
   const CampaignCard({
@@ -180,7 +180,7 @@ class CampaignCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      '$assignedDrivers Drivers',
+                      '${assignedDrivers.length} Drivers',
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Colors.grey[600],

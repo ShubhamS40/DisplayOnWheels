@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 // Reuse the same API config as in document_verification_driver.dart
 class ApiConfig {
   // Change this to your server's IP or hostname when testing
-  static String baseUrl = 'http://localhost:5000';
+  static String baseUrl = 'http://3.110.135.112:5000';
 
   // Admin API endpoints
   static String get pendingDriversUrl =>

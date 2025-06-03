@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tsp/screens/company/company_dashboard/company_dashboard_screen.dart';
 import 'package:tsp/screens/company/company_launch_ad_campain/ad_campaign_screen.dart';
 import 'package:tsp/screens/company/company_profile/company_profile_screen.dart';
+import 'package:tsp/utils/auth_protection.dart';
 
 class CompanyMainScreen extends StatefulWidget {
   const CompanyMainScreen({Key? key}) : super(key: key);
@@ -26,15 +27,17 @@ class _CompanyMainScreenState extends State<CompanyMainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_currentIndex],
-      bottomNavigationBar: CompanyBottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+    return AuthProtectedScreen(
+      child: Scaffold(
+        body: _screens[_currentIndex],
+        bottomNavigationBar: CompanyBottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+        ),
       ),
     );
   }

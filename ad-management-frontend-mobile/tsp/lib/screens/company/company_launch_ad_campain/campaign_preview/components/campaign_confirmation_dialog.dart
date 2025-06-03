@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tsp/screens/company/company_dashboard/company_dashboard_screen.dart';
 import 'package:tsp/services/campaign/campaign_service.dart';
@@ -9,7 +10,7 @@ import 'package:http_parser/http_parser.dart';
 // Global navigator key for safer navigation
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-class CampaignConfirmationDialog extends StatelessWidget {
+class CampaignConfirmationDialog extends ConsumerWidget {
   final Map<String, dynamic> campaignDetails;
   final bool isDarkMode;
   final Color orangeColor;
@@ -91,7 +92,7 @@ class CampaignConfirmationDialog extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return AlertDialog(
       backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
       title: Text(
@@ -211,26 +212,27 @@ class CampaignConfirmationDialog extends StatelessWidget {
           child: const Text('Confirm Campaign'),
           onPressed: () {
             Navigator.pop(context);
-            _submitCampaign(context);
+            _submitCampaign(context, ref);
           },
         ),
       ],
     );
   }
 
-  Future<void> _submitCampaign(BuildContext context) async {
+  Future<void> _submitCampaign(BuildContext context, WidgetRef ref) async {
     // Store context in a local variable to maintain a reference to the mounted state
     final BuildContext dialogContext = context;
-    
+
     // Create a NavigatorState variable to safely access Navigator later
     final NavigatorState navigator = Navigator.of(dialogContext);
-    
+
     // Create a GlobalKey to access the dialog state
-    final GlobalKey<_ProcessingDialogState> dialogKey = GlobalKey<_ProcessingDialogState>();
-    
+    final GlobalKey<_ProcessingDialogState> dialogKey =
+        GlobalKey<_ProcessingDialogState>();
+
     // Keep track of whether dialog is showing
     bool isDialogShowing = true;
-    
+
     // Show the processing dialog with the key
     showDialog(
       context: dialogContext,
@@ -245,7 +247,7 @@ class CampaignConfirmationDialog extends StatelessWidget {
 
     // Create the campaign service
     final campaignService = CampaignService();
-    
+
     // Create a function to safely close dialog
     void closeDialogSafely() {
       if (isDialogShowing && navigator.mounted) {
@@ -253,11 +255,10 @@ class CampaignConfirmationDialog extends StatelessWidget {
         navigator.pop();
       }
     }
-    
-    try {
 
+    try {
       debugPrint('Campaign creation started');
-      
+
       // Only for progress simulation
       await Future.delayed(const Duration(milliseconds: 500));
 
@@ -270,24 +271,28 @@ class CampaignConfirmationDialog extends StatelessWidget {
 
       // Log the campaign data being sent
       debugPrint('Sending campaign data: ${jsonEncode(campaignDetails)}');
-      
+
       // Add progress update callback to track upload progress
       final result = await campaignService.launchCampaign(
         campaignData: campaignDetails,
+        // Removed ref parameter to prevent "Cannot use ref after widget was disposed" error
         onProgressUpdate: (progress) {
           // Use a safer way to update progress that doesn't depend on BuildContext
-          if (dialogKey.currentState != null && dialogKey.currentState!.mounted) {
+          if (dialogKey.currentState != null &&
+              dialogKey.currentState!.mounted) {
             dialogKey.currentState!.updateProgress(progress);
             if (progress > 0.9) {
-              dialogKey.currentState!.updateMessage('Processing campaign data...');
+              dialogKey.currentState!
+                  .updateMessage('Processing campaign data...');
             }
           }
-          debugPrint('Upload progress: ${(progress * 100).toStringAsFixed(0)}%');
+          debugPrint(
+              'Upload progress: ${(progress * 100).toStringAsFixed(0)}%');
         },
       );
 
       debugPrint('Campaign API call completed with result: $result');
-      
+
       // Close processing dialog safely
       closeDialogSafely();
 
@@ -297,28 +302,32 @@ class CampaignConfirmationDialog extends StatelessWidget {
           debugPrint('Campaign created successfully');
           _showSuccessDialog(dialogContext);
         } else {
-          String errorMessage = result['message'] ?? 'Failed to create campaign. Please try again.';
+          String errorMessage = result['message'] ??
+              'Failed to create campaign. Please try again.';
           debugPrint('Campaign creation error: $errorMessage');
           // More helpful error message for users
           if (errorMessage.contains('404')) {
-            errorMessage = 'Server endpoint not found. Please verify the API configuration.';
+            errorMessage =
+                'Server endpoint not found. Please verify the API configuration.';
           } else if (errorMessage.contains('Connection')) {
-            errorMessage = 'Network connection issue. Please check your internet connection and try again.';
+            errorMessage =
+                'Network connection issue. Please check your internet connection and try again.';
           } else if (errorMessage.contains('Error:')) {
             // Format more technical errors in a user-friendly way
-            errorMessage = 'An error occurred while processing your request. Technical details have been logged for our team.';
+            errorMessage =
+                'An error occurred while processing your request. Technical details have been logged for our team.';
           }
           _showErrorDialog(dialogContext, errorMessage);
         }
       }
-      
+
       debugPrint('Campaign creation dialog flow completed');
     } catch (e, stackTrace) {
       // Additional error handling to catch any issues in the UI flow
       debugPrint('Exception in campaign creation UI flow: $e');
       debugPrint('Stack trace: $stackTrace');
       closeDialogSafely();
-      
+
       // Show error dialog if navigator is still mounted
       if (navigator.mounted) {
         _showErrorDialog(dialogContext, 'An unexpected error occurred: $e');
@@ -329,12 +338,12 @@ class CampaignConfirmationDialog extends StatelessWidget {
   // Very simple navigation that avoids BuildContext issues
   void _showSuccessDialog(BuildContext context) {
     debugPrint('Campaign created successfully - navigating to dashboard');
-    
+
     // First close any open dialogs
     if (Navigator.of(context, rootNavigator: true).canPop()) {
       Navigator.of(context, rootNavigator: true).pop();
     }
-    
+
     // Then navigate directly to the dashboard after a brief delay
     Future.delayed(const Duration(milliseconds: 300), () {
       // Use a try-catch to handle any navigation issues
@@ -354,7 +363,7 @@ class CampaignConfirmationDialog extends StatelessWidget {
   void _showErrorDialog(BuildContext context, String message) {
     // Just print error and return - we'll handle navigation separately
     debugPrint('Campaign creation error: $message');
-    
+
     // Instead of trying to show a dialog, just print and return
     // The parent method will handle navigation
     return;
@@ -381,24 +390,25 @@ class _ProcessingDialogState extends State<_ProcessingDialog> {
   String currentMessage = "";
   double progress = 0.0;
   bool showDebugInfo = false;
-  
+
   @override
   void initState() {
     super.initState();
     currentMessage = widget.message;
   }
-  
+
   void updateProgress(double value) {
     if (mounted) {
       setState(() {
         progress = value;
         if (value > 0) {
-          currentMessage = "${widget.message} (${(value * 100).toStringAsFixed(0)}%)";
+          currentMessage =
+              "${widget.message} (${(value * 100).toStringAsFixed(0)}%)";
         }
       });
     }
   }
-  
+
   void updateMessage(String message) {
     if (mounted) {
       setState(() {
@@ -414,15 +424,16 @@ class _ProcessingDialogState extends State<_ProcessingDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          progress > 0 
-            ? LinearProgressIndicator(
-                value: progress,
-                valueColor: AlwaysStoppedAnimation<Color>(widget.orangeColor),
-                backgroundColor: widget.isDarkMode ? Colors.grey[800] : Colors.grey[200],
-              )
-            : CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(widget.orangeColor),
-              ),
+          progress > 0
+              ? LinearProgressIndicator(
+                  value: progress,
+                  valueColor: AlwaysStoppedAnimation<Color>(widget.orangeColor),
+                  backgroundColor:
+                      widget.isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                )
+              : CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(widget.orangeColor),
+                ),
           const SizedBox(height: 16),
           Text(
             currentMessage,
@@ -432,7 +443,7 @@ class _ProcessingDialogState extends State<_ProcessingDialog> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          if (showDebugInfo) ...[  
+          if (showDebugInfo) ...[
             const SizedBox(height: 8),
             Text(
               "If this is taking too long, check your network connection or file size",
@@ -463,3 +474,5 @@ class _ProcessingDialogState extends State<_ProcessingDialog> {
     );
   }
 }
+
+

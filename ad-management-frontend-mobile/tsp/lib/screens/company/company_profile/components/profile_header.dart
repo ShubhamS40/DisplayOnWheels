@@ -57,7 +57,7 @@ class CompanyProfileHeader extends StatelessWidget {
               children: [
                 const SizedBox(height: 60),
                 Text(
-                  basicDetails?.companyName ?? 'Loading...',
+                  basicDetails?.businessName ?? 'Loading...',
                   style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -66,7 +66,7 @@ class CompanyProfileHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Company ID: ${basicDetails?.id.substring(0, 8) ?? 'Loading...'}',
+                  'Company ID: ${_formatCompanyId(basicDetails?.id)}',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: Colors.grey[600],
@@ -85,12 +85,12 @@ class CompanyProfileHeader extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _buildStatusChip(
-                      basicDetails?.isVerified == true ? 'Verified' : 'Unverified', 
-                      basicDetails?.isVerified == true ? Colors.green : Colors.amber
+                      profileProvider.isVerified ? 'Verified' : 'Unverified', 
+                      profileProvider.isVerified ? Colors.green : Colors.amber
                     ),
                     const SizedBox(width: 8),
                     _buildStatusChip(
-                      profileProvider.accountDetails?.planType ?? 'No Plan',
+                      basicDetails?.businessType ?? 'Business',
                       primaryOrange,
                     ),
                   ],
@@ -125,10 +125,10 @@ class CompanyProfileHeader extends StatelessWidget {
               child: CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.grey[200],
-                backgroundImage: basicDetails?.logoUrl != null && basicDetails!.logoUrl.isNotEmpty
-                    ? NetworkImage(basicDetails.logoUrl)
+                backgroundImage: basicDetails?.logoUrl != null && basicDetails!.logoUrl!.isNotEmpty
+                    ? NetworkImage(basicDetails.logoUrl!)
                     : null,
-                child: basicDetails?.logoUrl == null || basicDetails!.logoUrl.isEmpty
+                child: basicDetails?.logoUrl == null || (basicDetails!.logoUrl?.isEmpty ?? true)
                     ? const Icon(Icons.business, size: 50, color: Colors.grey)
                     : null,
               ),
@@ -137,6 +137,14 @@ class CompanyProfileHeader extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  // Helper method to safely format company ID
+  String _formatCompanyId(String? id) {
+    if (id == null || id.isEmpty) {
+      return 'Loading...';
+    }
+    return id.length >= 8 ? id.substring(0, 8) : id;
   }
 
   Widget _buildStatusChip(String label, Color color) {

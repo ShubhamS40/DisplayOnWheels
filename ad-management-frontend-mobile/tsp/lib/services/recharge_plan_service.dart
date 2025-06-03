@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 // Service to handle API calls to the recharge plan endpoints
 class RechargePlanService {
-  final String baseUrl = 'http://localhost:5000/api/admin-manage';
+  final String baseUrl = 'http://3.110.135.112:5000/api/admin-manage';
   
   // Get all recharge plans
   Future<List<Map<String, dynamic>>> getAllPlans() async {

@@ -31,52 +31,42 @@ class DrivingStatisticsSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  '125',
-                  'km',
-                  'Total Distance',
+          Container(
+            height: 150,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
                   Icons.speed_outlined,
-                  const Color(0xFF5C6BC0),
+                  size: 40,
+                  color: Colors.grey[400],
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  '8.5',
-                  'hr',
-                  'Drive Time',
-                  Icons.access_time,
-                  const Color(0xFFEC407A),
+                const SizedBox(height: 16),
+                Text(
+                  'Coming Soon',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[600],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  '42',
-                  'km/h',
-                  'Avg. Speed',
-                  Icons.show_chart,
-                  const Color(0xFF42A5F5),
+                const SizedBox(height: 8),
+                Text(
+                  'Driving statistics will be available soon',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.grey[500],
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  '12',
-                  '',
-                  'Ad Displays',
-                  Icons.visibility_outlined,
-                  const Color(0xFFFF9800),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

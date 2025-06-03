@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 // API Config class for company document verification
 class CompanyApiConfig {
   // Change this to your server's IP or hostname when testing
-  static String baseUrl = 'http://localhost:5000';
+  static String baseUrl = 'http://3.110.135.112:5000';
 
   // Admin API endpoints for company documents
   static String get pendingCompaniesUrl =>

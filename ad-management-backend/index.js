@@ -73,6 +73,8 @@ app.use('/api/company-dashboard',ComapnyDashboard)
 // Get all Drivers Live Location for The Assigned Drivers
 app.use("/api/company/compaign-assign-drivers",CompaignAssignDriversLiveLocation)
 
+// Company Profile Screen Route
+app.use("/api/company-profile", require('./routes/Company/CompanyProfile/companyDetails')); // Adjust the path as needed
 
 
 
@@ -127,6 +129,6 @@ app.get('/hi', (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log(`Access the server at http://localhost:${PORT}`);
+  console.log(`Access the server at https://displayonwheels.com`);
   console.log(`For external access, use your machine's IP address`);
 });

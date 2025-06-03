@@ -17,10 +17,12 @@ class CompanyProfileScreen extends ConsumerStatefulWidget {
   const CompanyProfileScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<CompanyProfileScreen> createState() => _CompanyProfileScreenState();
+  ConsumerState<CompanyProfileScreen> createState() =>
+      _CompanyProfileScreenState();
 }
 
-class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen> with SingleTickerProviderStateMixin {
+class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen>
+    with SingleTickerProviderStateMixin {
   final AuthService _authService = AuthService();
   late TabController _tabController;
 
@@ -28,19 +30,31 @@ class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen> wit
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    
+
     // Fetch company profile data when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Get both providers we need
       final companyProfileProvider =
           provider.Provider.of<CompanyProfileProvider>(context, listen: false);
       final companyId = ref.read(companyIdProvider);
 
-      // Only fetch if we have a company ID and the profile is not loaded or has an error
-      if (companyId != null &&
-          (companyProfileProvider.companyProfile == null ||
-              companyProfileProvider.error != null)) {
-        companyProfileProvider.fetchCompanyProfile(companyId);
+      print('Company ID from provider: $companyId');
+
+      // If no company ID from provider, show a message instead of using a default ID
+      if (companyId == null || companyId.isEmpty) {
+        print('No valid company ID found. Please login again.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No valid company ID found. Please login again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return; // Don't fetch profile without a valid ID
       }
+
+      // Always fetch to ensure we have the latest data
+      print('Fetching company profile for ID: $companyId');
+      companyProfileProvider.fetchCompanyProfile(companyId);
     });
   }
 

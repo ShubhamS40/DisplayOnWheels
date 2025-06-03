@@ -46,7 +46,6 @@ class CarInputFields extends StatelessWidget {
           },
         ),
         const SizedBox(height: 20),
-        
         const Text(
           'Total Amount',
           style: AdCampaignTheme.subheadingStyle,
@@ -78,12 +77,12 @@ class CarInputFields extends StatelessWidget {
     if (selectedPlanPrice == null || carCountController.text.isEmpty) {
       return 'Total No of Cars * Select plan';
     }
-    
+
     int? carCount = int.tryParse(carCountController.text);
     if (carCount == null) {
       return 'Total No of Cars * Select plan';
     }
-    
+
     int totalAmount = carCount * selectedPlanPrice!;
     return '₹ $totalAmount';
   }

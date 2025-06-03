@@ -50,7 +50,7 @@ const forgotPasswordDriver = async (req, res) => {
       }
     });
 
-    const resetLink = `http://localhost:3000/reset-password/${token}`;
+    const resetLink = `https://displayonwheels.com/reset-password/${token}`;
 
     const transporter = nodemailer.createTransport({
       service: 'gmail',

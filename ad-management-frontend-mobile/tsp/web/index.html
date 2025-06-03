@@ -21,6 +21,7 @@
   <meta name="description" content="A new Flutter project.">
 
   <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="tsp">
@@ -33,6 +34,50 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <!-- Add this script for video_player web support -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script src="flutter_bootstrap.js" async></script>
+  
+  <!-- Enhanced video autoplay support for web -->
+  <script>
+    // Immediately try to enable autoplay for all videos
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded, setting up video autoplay support');
+      
+      // Function to enable autoplay on all video elements
+      function enableAutoplayForVideos() {
+        const videos = document.getElementsByTagName('video');
+        console.log('Found ' + videos.length + ' video elements');
+        
+        for (let i = 0; i < videos.length; i++) {
+          const video = videos[i];
+          video.muted = true;
+          video.setAttribute('muted', '');
+          video.setAttribute('playsinline', '');
+          video.setAttribute('webkit-playsinline', '');
+          video.setAttribute('autoplay', '');
+          
+          console.log('Video ' + i + ' attributes set, attempting to play');
+          
+          // Try to play the video
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise.then(() => {
+              console.log('Video ' + i + ' autoplay started successfully');
+            }).catch(error => {
+              console.error('Video ' + i + ' autoplay failed:', error);
+            });
+          }
+        }
+      }
+      
+      // Try immediately
+      enableAutoplayForVideos();
+      
+      // Also try when user interacts with the page
+      document.body.addEventListener('click', enableAutoplayForVideos);
+      document.body.addEventListener('touchstart', enableAutoplayForVideos);
+    });
+  </script>
 </body>
 </html>

@@ -27,7 +27,7 @@ class _DriverVerificationState extends State<DriverVerification> {
 
   Future<void> fetchDriverDocuments() async {
     final response = await http.get(Uri.parse(
-        'http://localhost:5000/api/admin/driver-documents/${widget.driverId}'));
+        'http://3.110.135.112:5000/api/admin/driver-documents/${widget.driverId}'));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -66,7 +66,7 @@ class _DriverVerificationState extends State<DriverVerification> {
 
     final response = await http.put(
       Uri.parse(
-          'http://localhost:5000/api/admin/driver-documents/${widget.driverId}/verify'),
+          'http://3.110.135.112:5000/api/admin/driver-documents/${widget.driverId}/verify'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode(body),
     );

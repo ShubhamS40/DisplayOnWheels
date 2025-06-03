@@ -5,19 +5,19 @@ class AdCampaignTheme {
   static const Color primaryOrange = Color(0xFFFF6600);
   static const Color primaryWhite = Colors.white;
   static const Color primaryBlack = Colors.black;
-  
+
   // Background colors
   static const Color backgroundColor = Colors.white;
   static const Color secondaryBackground = Color(0xFFF5F5F5);
-  
+
   // Text colors
   static const Color textPrimary = Color(0xFF303030);
   static const Color textSecondary = Color(0xFF757575);
   static const Color textLight = Color(0xFFAAAAAA);
-  
+
   // Border colors
   static const Color borderColor = Color(0xFFE0E0E0);
-  
+
   // Button styles
   static ButtonStyle primaryButtonStyle = ElevatedButton.styleFrom(
     backgroundColor: primaryOrange,
@@ -29,7 +29,7 @@ class AdCampaignTheme {
     ),
     minimumSize: const Size(double.infinity, 50),
   );
-  
+
   static ButtonStyle secondaryButtonStyle = ElevatedButton.styleFrom(
     backgroundColor: primaryWhite,
     foregroundColor: primaryOrange,
@@ -41,7 +41,7 @@ class AdCampaignTheme {
     ),
     minimumSize: const Size(double.infinity, 50),
   );
-  
+
   static ButtonStyle blackButtonStyle = ElevatedButton.styleFrom(
     backgroundColor: primaryBlack,
     foregroundColor: primaryWhite,
@@ -52,9 +52,10 @@ class AdCampaignTheme {
     ),
     minimumSize: const Size(double.infinity, 50),
   );
-  
+
   // Input decoration
-  static InputDecoration inputDecoration(String label, {String? hintText, Widget? suffixIcon}) {
+  static InputDecoration inputDecoration(String label,
+      {String? hintText, Widget? suffixIcon}) {
     return InputDecoration(
       labelText: label,
       hintText: hintText,
@@ -75,25 +76,25 @@ class AdCampaignTheme {
       ),
     );
   }
-  
+
   // Text styles
   static const TextStyle headingStyle = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.bold,
     color: textPrimary,
   );
-  
+
   static const TextStyle subheadingStyle = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w500,
     color: textPrimary,
   );
-  
+
   static const TextStyle bodyStyle = TextStyle(
     fontSize: 14,
     color: textSecondary,
   );
-  
+
   static const TextStyle buttonTextStyle = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.bold,

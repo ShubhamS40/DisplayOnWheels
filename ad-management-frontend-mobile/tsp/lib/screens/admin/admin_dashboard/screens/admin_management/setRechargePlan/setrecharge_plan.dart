@@ -26,7 +26,7 @@ class _AdminRechargePlansScreenState extends State<AdminRechargePlansScreen> {
   int? editingId;
 
   final baseUrl =
-      'http://localhost:5000/api/admin-manage'; // change to your backend URL
+      'http://3.110.135.112:5000/api/admin-manage'; // change to your backend URL
 
   @override
   void initState() {

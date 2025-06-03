@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tsp/screens/driver/driver_dashboard/driver_dashboard.dart';
+import 'package:tsp/utils/auth_protection.dart';
 import 'driver_profile/driver_profile_screen.dart';
 import 'driver_liveloaction/driver_live_location.dart';
 
@@ -28,15 +29,17 @@ class _DriverMainScreenState extends State<DriverMainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_currentIndex],
-      bottomNavigationBar: DriverBottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+    return AuthProtectedScreen(
+      child: Scaffold(
+        body: _screens[_currentIndex],
+        bottomNavigationBar: DriverBottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+        ),
       ),
     );
   }

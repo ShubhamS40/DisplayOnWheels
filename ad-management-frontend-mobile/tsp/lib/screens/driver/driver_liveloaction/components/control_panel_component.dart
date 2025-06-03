@@ -16,6 +16,7 @@ class ControlPanelComponent extends StatelessWidget {
   final VoidCallback onShowBluetoothPanel;
   final bool isBluetoothOn;
   final bool isTargetDeviceConnected;
+  final bool manuallyStoppedByDriver; // New parameter to track if driver manually stopped sharing
   
   // Storage info
   final bool? storedInRedis;
@@ -36,6 +37,7 @@ class ControlPanelComponent extends StatelessWidget {
     required this.onShowBluetoothPanel,
     required this.isBluetoothOn,
     required this.isTargetDeviceConnected,
+    this.manuallyStoppedByDriver = false, // Default to false
     this.storedInRedis,
     this.storedInDatabase,
     this.nextDatabaseUpdateIn,
@@ -57,6 +59,7 @@ class ControlPanelComponent extends StatelessWidget {
             successColor: successColor,
             cardColor: cardColor,
             isTargetDeviceConnected: isTargetDeviceConnected,
+            manuallyStoppedByDriver: manuallyStoppedByDriver, // Pass the new flag
             storedInRedis: storedInRedis,
             storedInDatabase: storedInDatabase,
             nextDatabaseUpdateIn: nextDatabaseUpdateIn,
@@ -90,8 +93,8 @@ class ControlPanelComponent extends StatelessWidget {
                   children: [
                     ActionButtonComponent(
                       icon: isSharing ? Icons.stop_circle : Icons.play_circle,
-                      label: isSharing ? 'Stop Sharing' : 'Start Sharing',
-                      color: isSharing ? errorColor : successColor,
+                      label: isSharing ? 'Stop Sharing' : (!manuallyStoppedByDriver ? 'Pause Sharing' : 'Start Sharing'),
+                      color: isSharing ? errorColor : (!manuallyStoppedByDriver ? Colors.orange : successColor),
                       onTap: onToggleLocationSharing,
                     ),
                     SizedBox(width: 12),

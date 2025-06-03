@@ -10,8 +10,7 @@ import 'package:path/path.dart' as path;
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:mime/mime.dart';
 import 'package:tsp/screens/driver/driver_document/documentVerification_Stage.dart';
-// For web
-import 'dart:html' as html show File, FileReader, window;
+import 'package:tsp/utils/platform_utils/platform_utils.dart';
 import 'dart:typed_data';
 
 // Add a configuration class for API settings
@@ -21,8 +20,8 @@ class ApiConfig {
   // Use 10.0.2.2 when testing on Android emulator to connect to localhost
   // Use localhost when testing on iOS simulator or web on the same machine
   static String baseUrl = kIsWeb
-      ? 'http://localhost:5000' // For web browser testing
-      : 'http://10.0.2.2:5000'; // For emulator testing
+      ? 'http://3.110.135.112:5000' // For web browser testing
+      : 'http://3.110.135.112:5000'; // For emulator testing
 
   // For specific environments, you can override:
   // static String baseUrl = 'http://192.168.X.X:5000'; // Replace with your IP

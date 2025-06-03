@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/driver_profile_model.dart';
 
 class DriverProfileService {
-  final String baseUrl = 'http://localhost:5000/api';
+  final String baseUrl = 'http://3.110.135.112:5000/api';
   
   // Get driver profile data
   Future<DriverProfileModel> getDriverProfile(String driverId) async {

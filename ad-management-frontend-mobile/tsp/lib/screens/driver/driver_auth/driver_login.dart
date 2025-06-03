@@ -203,7 +203,7 @@ class _DriverLoginScreenState extends ConsumerState<DriverLoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Image.asset("assets/authsvg/driver_signup.png", height: 320),
+                Image.asset("assets/logo/Car.png", height: 320),
                 Container(
                   padding: const EdgeInsets.all(20),
                   width: double.infinity,

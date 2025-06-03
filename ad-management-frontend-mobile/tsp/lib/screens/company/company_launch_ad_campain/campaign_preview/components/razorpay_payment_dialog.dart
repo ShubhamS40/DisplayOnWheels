@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:tsp/screens/company/company_dashboard/company_dashboard_screen.dart';
 import 'package:tsp/services/payment/payment_manager.dart';
 import 'package:tsp/utils/theme_constants.dart';
 import 'package:tsp/services/campaign/campaign_service.dart';
 
-class RazorPaymentDialog extends StatelessWidget {
+class RazorPaymentDialog extends ConsumerWidget {
   final Map<String, dynamic> campaignDetails;
   final bool isDarkMode;
   final Color orangeColor;
@@ -28,7 +29,7 @@ class RazorPaymentDialog extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return AlertDialog(
       backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
       title: Text(
@@ -150,14 +151,14 @@ class RazorPaymentDialog extends StatelessWidget {
             Navigator.pop(context);
             
             // Create and initialize payment manager
-            _initializePayment(context);
+            _initializePayment(context, ref);
           },
         ),
       ],
     );
   }
   
-  void _initializePayment(BuildContext context) {
+  void _initializePayment(BuildContext context, WidgetRef ref) {
     // Show processing dialog
     showDialog(
       context: context,
@@ -173,7 +174,7 @@ class RazorPaymentDialog extends StatelessWidget {
     final paymentManager = PaymentManager(
       onPaymentComplete: (String paymentId) {
         // Submit campaign data to API
-        _submitCampaignData(context, paymentId);
+        _submitCampaignData(context, paymentId, ref);
       },
       onPaymentError: (error) {
         // Close processing dialog
@@ -197,7 +198,7 @@ class RazorPaymentDialog extends StatelessWidget {
   }
   
   // Submit campaign data to API after successful payment
-  Future<void> _submitCampaignData(BuildContext context, String paymentId) async {
+  Future<void> _submitCampaignData(BuildContext context, String paymentId, WidgetRef ref) async {
     // Update processing dialog message
     Navigator.pop(context); // Remove previous dialog
     showDialog(
@@ -215,6 +216,7 @@ class RazorPaymentDialog extends StatelessWidget {
     final success = await campaignService.launchCampaign(
       campaignData: campaignDetails,
       paymentId: paymentId,
+      // Removed ref parameter to prevent "Cannot use ref after widget was disposed" error
     );
     
     // Close processing dialog

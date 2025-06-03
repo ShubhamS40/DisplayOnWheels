@@ -87,7 +87,7 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
           '${Constants.baseUrl}/api/company-dashboard/campaigns/$campaignId';
 
       // For testing, we can directly use the local URL
-      // final apiUrl = 'http://localhost:5000/api/company-dashboard/campaigns/$campaignId';
+      // final apiUrl = 'http://3.110.135.112:5000/api/company-dashboard/campaigns/$campaignId';
 
       final response = await http.get(
         Uri.parse(apiUrl),

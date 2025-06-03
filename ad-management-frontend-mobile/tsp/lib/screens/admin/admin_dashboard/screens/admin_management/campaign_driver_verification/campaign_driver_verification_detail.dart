@@ -133,7 +133,7 @@ class _CampaignDriverVerificationDetailState
   }
 
   final Dio _dio = Dio(BaseOptions(
-    baseUrl: 'http://localhost:5000',
+    baseUrl: 'http://3.110.135.112:5000',
     connectTimeout: Duration(seconds: 5),
     receiveTimeout: Duration(seconds: 3),
   ));

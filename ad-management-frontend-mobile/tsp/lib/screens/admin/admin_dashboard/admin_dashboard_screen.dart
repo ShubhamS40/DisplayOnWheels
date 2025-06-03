@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tsp/screens/admin/admin_dashboard/screens/admin_analytics/admin_analytics_screen.dart';
 import 'package:tsp/screens/admin/admin_dashboard/screens/admin_management/admin_management_screen.dart';
 import 'package:tsp/screens/admin/admin_dashboard/screens/admin_overview/admin_overview_screen.dart';
+import 'package:tsp/utils/auth_protection.dart';
 import 'dart:async';
 import '../../../utils/theme_constants.dart';
 import 'components/stat_card.dart';
@@ -140,8 +141,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDarkMode ? Colors.white : ThemeConstants.textPrimary;
 
-    return Scaffold(
-      appBar: AppBar(
+    return AuthProtectedScreen(
+      child: Scaffold(
+        appBar: AppBar(
         backgroundColor: isDarkMode
             ? ThemeConstants.darkBackground
             : ThemeConstants.lightBackground,
@@ -215,6 +217,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                 AdminManagementScreen(),
               ],
             ),
+      ),
     );
   }
 }
