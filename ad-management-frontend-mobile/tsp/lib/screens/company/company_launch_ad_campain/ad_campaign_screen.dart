@@ -21,6 +21,7 @@ class AdCampaignScreen extends StatefulWidget {
 }
 
 class _AdCampaignScreenState extends State<AdCampaignScreen> {
+  XFile? _pickedXFile; // To store the picked XFile for filename
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _adTitleController = TextEditingController();
   final TextEditingController _carCountController = TextEditingController();
@@ -87,6 +88,7 @@ class _AdCampaignScreenState extends State<AdCampaignScreen> {
       );
 
       if (pickedFile != null) {
+        _pickedXFile = pickedFile; // Store the picked XFile
         setState(() {
           _needsDesignRequest =
               false; // Disable design request if user uploads image
@@ -96,11 +98,13 @@ class _AdCampaignScreenState extends State<AdCampaignScreen> {
             pickedFile.readAsBytes().then((bytes) {
               setState(() {
                 _webPosterBytes = bytes;
+                _posterFile = null; // Ensure mobile file is null for web
               });
             });
           } else {
             // For mobile platforms
             _posterFile = File(pickedFile.path);
+            _webPosterBytes = null; // Ensure web bytes are null for mobile
           }
         });
       }
@@ -118,6 +122,42 @@ class _AdCampaignScreenState extends State<AdCampaignScreen> {
   }
 
   @override
+  Map<String, dynamic> _buildAdDetails() {
+    final Map<String, dynamic> details = {
+      'adTitle': _adTitleController.text,
+      'vehicleType': _selectedVehicleType,
+      'selectedPlan': _selectedPlan,
+      'planPrice': _selectedPlanPrice,
+      'planDuration': _planDuration, // Added plan duration
+      'carCount': _carCount,
+      'totalPlanPrice': _totalPlanPrice, // Included total plan price
+      'targetLocation': _locationController.text,
+      'needsPosterDesign': _needsDesignRequest,
+      'posterSize': _posterSize, // General poster size
+      'posterDesignPrice': _needsDesignRequest ? _posterDesignPrice : 0.0,
+      'posterTitle': _needsDesignRequest ? _posterTitle : '',
+      'posterNotes': _needsDesignRequest ? _posterNotes : '',
+      'designIdeas': _needsDesignRequest ? _designIdeas : '',
+    };
+
+    if (!_needsDesignRequest) {
+      if (kIsWeb) {
+        if (_webPosterBytes != null) {
+          details['posterBytes'] = _webPosterBytes;
+          details['posterFileName'] = _pickedXFile?.name ?? 'poster_web.png';
+        }
+      } else {
+        // Mobile
+        if (_posterFile != null) {
+          details['posterFile'] = _posterFile;
+          // Optionally, include filename for mobile from _pickedXFile if needed by service, though service currently uses basename.
+          // details['posterFileName'] = _pickedXFile?.name ?? (_posterFile != null ? path.basename(_posterFile!.path) : null);
+        }
+      }
+    }
+    return details;
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -404,23 +444,8 @@ class _AdCampaignScreenState extends State<AdCampaignScreen> {
               // Preview Button
               PreviewButton(
                 isFormValid: _isFormValid,
-                adDetails: {
-                  'adTitle': _adTitleController.text,
-                  'vehicleType': _selectedVehicleType,
-                  'selectedPlan': _selectedPlan,
-                  'planPrice': _selectedPlanPrice,
-                  'carCount': _carCount,
-                  'totalPlanPrice': _totalPlanPrice,
-                  'targetLocation': _locationController.text,
-                  'needsPosterDesign': _needsDesignRequest,
-                  'posterTitle': _posterTitle,
-                  'posterNotes': _posterNotes,
-                  'designIdeas': _designIdeas,
-                  'posterSize': _posterSize,
-                  'posterDesignPrice': _posterDesignPrice,
-                  'posterFile': _posterFile,
-                  'posterBytes': _webPosterBytes,
-                },
+                adDetails:
+                    _buildAdDetails(), // Use a helper method to build adDetails
               ),
             ],
           ),

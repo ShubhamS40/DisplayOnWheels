@@ -57,7 +57,8 @@ class DriverLocationData {
       isAssigned: json['isAssigned'] as bool? ?? true,
       latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
-      timestamp: json['timestamp'] as String? ?? DateTime.now().toIso8601String(),
+      timestamp:
+          json['timestamp'] as String? ?? DateTime.now().toIso8601String(),
       lastUpdateAgo: json['lastUpdateAgo'] as String? ?? 'Unknown',
     );
   }
@@ -67,7 +68,8 @@ class CompanyDriversMapScreen extends StatefulWidget {
   const CompanyDriversMapScreen({Key? key}) : super(key: key);
 
   @override
-  State<CompanyDriversMapScreen> createState() => _CompanyDriversMapScreenState();
+  State<CompanyDriversMapScreen> createState() =>
+      _CompanyDriversMapScreenState();
 }
 
 class _CompanyDriversMapScreenState extends State<CompanyDriversMapScreen> {
@@ -436,9 +438,8 @@ class _CompanyDriversMapScreenState extends State<CompanyDriversMapScreen> {
                         Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: driver.isActive
-                                ? Colors.green
-                                : Colors.orange,
+                            color:
+                                driver.isActive ? Colors.green : Colors.orange,
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: Colors.white,
@@ -705,8 +706,10 @@ class _CompanyDriversMapScreenState extends State<CompanyDriversMapScreen> {
               _buildDetailItem('Campaign', driver.campaignTitle),
               _buildDetailItem('Phone', driver.phone),
               _buildDetailItem('Email', driver.email),
-              _buildDetailItem('Status', driver.isActive ? 'Active' : 'Inactive'),
-              _buildDetailItem('Last Updated', _formatTimestamp(driver.timestamp)),
+              _buildDetailItem(
+                  'Status', driver.isActive ? 'Active' : 'Inactive'),
+              _buildDetailItem(
+                  'Last Updated', _formatTimestamp(driver.timestamp)),
               Divider(),
               Text(
                 'Location:',

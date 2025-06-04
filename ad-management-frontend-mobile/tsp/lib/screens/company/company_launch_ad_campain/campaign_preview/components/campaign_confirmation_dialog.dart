@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -209,10 +211,20 @@ class CampaignConfirmationDialog extends ConsumerWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: orangeColor,
           ),
-          child: const Text('Confirm Campaign'),
+          child: const Text(
+            'Confirm Campaign',
+            style: TextStyle(color: Colors.white),
+          ),
           onPressed: () {
             Navigator.pop(context);
             _submitCampaign(context, ref);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Campaign created successfully'),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 2),
+              ),
+            );
           },
         ),
       ],
@@ -270,7 +282,21 @@ class CampaignConfirmationDialog extends ConsumerWidget {
       }
 
       // Log the campaign data being sent
-      debugPrint('Sending campaign data: ${jsonEncode(campaignDetails)}');
+      // Create a JSON-encodable version for logging
+      final loggableCampaignDetails =
+          Map<String, dynamic>.from(campaignDetails);
+      if (loggableCampaignDetails['posterFile'] != null &&
+          loggableCampaignDetails['posterFile'] is File) {
+        loggableCampaignDetails['posterFile'] =
+            (loggableCampaignDetails['posterFile'] as File).path;
+      }
+      if (loggableCampaignDetails['posterBytes'] != null &&
+          loggableCampaignDetails['posterBytes'] is Uint8List) {
+        loggableCampaignDetails['posterBytes'] =
+            '<Uint8List data>'; // Avoid logging large byte arrays
+      }
+      debugPrint(
+          'Sending campaign data (loggable): ${jsonEncode(loggableCampaignDetails)}');
 
       // Add progress update callback to track upload progress
       final result = await campaignService.launchCampaign(
@@ -337,26 +363,70 @@ class CampaignConfirmationDialog extends ConsumerWidget {
 
   // Very simple navigation that avoids BuildContext issues
   void _showSuccessDialog(BuildContext context) {
-    debugPrint('Campaign created successfully - navigating to dashboard');
+    debugPrint('Campaign created successfully - showing success message');
+
+    if (!context.mounted) {
+      debugPrint(
+          'Context in _showSuccessDialog is not mounted. Aborting dialog display.');
+      return;
+    }
 
     // First close any open dialogs
     if (Navigator.of(context, rootNavigator: true).canPop()) {
       Navigator.of(context, rootNavigator: true).pop();
     }
 
-    // Then navigate directly to the dashboard after a brief delay
-    Future.delayed(const Duration(milliseconds: 300), () {
-      // Use a try-catch to handle any navigation issues
-      try {
-        // Use pushReplacement instead of pushAndRemoveUntil
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const CompanyDashboardScreen()),
+    // Show success dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
+          title: Row(
+            children: [
+              Icon(
+                Icons.check_circle,
+                color: Colors.green,
+                size: 28,
+              ),
+              SizedBox(width: 10),
+              Text(
+                'Success!',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Your ad campaign has been created successfully!',
+            style: TextStyle(
+              color: isDarkMode ? Colors.white : Colors.black,
+            ),
+          ),
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: orangeColor,
+              ),
+              child: const Text('Go to Dashboard'),
+              onPressed: () {
+                // Close the success dialog
+                Navigator.of(dialogContext).pop();
+
+                // Navigate to dashboard
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                      builder: (_) => const CompanyDashboardScreen()),
+                );
+              },
+            ),
+          ],
         );
-      } catch (e) {
-        debugPrint('Error during navigation: $e');
-        // No fallback navigation needed - user can simply press back
-      }
-    });
+      },
+    );
   }
 
   // Safer error handling method that doesn't use BuildContext directly
@@ -474,5 +544,3 @@ class _ProcessingDialogState extends State<_ProcessingDialog> {
     );
   }
 }
-
-

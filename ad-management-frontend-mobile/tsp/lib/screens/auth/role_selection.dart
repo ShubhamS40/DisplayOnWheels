@@ -69,7 +69,7 @@ class _RoleSelectionScreenState extends ConsumerState<RoleSelectionScreen>
       case "Company":
         // Navigate to merged company onboarding screen
         Navigator.push(
-          context, 
+          context,
           MaterialPageRoute(
             builder: (context) => MergedCompanyOnboardingScreen(
               onComplete: () {
@@ -86,7 +86,7 @@ class _RoleSelectionScreenState extends ConsumerState<RoleSelectionScreen>
       case "Driver":
         // Navigate to driver onboarding first
         Navigator.push(
-          context, 
+          context,
           MaterialPageRoute(
             builder: (context) => DriverScreen(
               onComplete: () {
@@ -269,16 +269,16 @@ class _RoleSelectionScreenState extends ConsumerState<RoleSelectionScreen>
                   children: [
                     // Decorative header icon
                     Container(
-                      width: 70,
-                      height: 70,
+                      width: 100,
+                      height: 100,
                       decoration: BoxDecoration(
-                        color: selectedColor.withOpacity(0.1),
-                        shape: BoxShape.circle,
+                        color: Colors.orangeAccent,
+                        shape: BoxShape.rectangle,
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Icon(
-                        Icons.login_rounded,
-                        size: 40,
-                        color: selectedColor,
+                      child: Image.asset(
+                        'assets/logo/dow.png', // Replace with your logo asset
+                        fit: BoxFit.contain,
                       ),
                     ),
 
@@ -286,7 +286,7 @@ class _RoleSelectionScreenState extends ConsumerState<RoleSelectionScreen>
 
                     // Header text
                     Text(
-                      "Welcome to TSP ",
+                      "DisplayOnWheels ",
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,

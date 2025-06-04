@@ -11,7 +11,8 @@ class DisplayAdsScreen extends StatefulWidget {
     required this.onSkip,
   }) : super(key: key);
 
-  @override
+  @override// line 273 in CampaignConfirmationDialog._submitCampaign
+  debugPrint('Sending campaign data: ${jsonEncode(campaignDetails)}');
   State<DisplayAdsScreen> createState() => _DisplayAdsScreenState();
 }
 
