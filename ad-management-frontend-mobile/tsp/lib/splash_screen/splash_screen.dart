@@ -1,9 +1,19 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:tsp/screens/auth/role_selection.dart';
+import 'package:tsp/screens/driver/driver_document/documentUpload.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tsp/screens/driver/driver_main_screen.dart';
+import 'package:tsp/screens/company/company_main_screen/company_main_screen.dart';
+import 'package:tsp/screens/admin/admin_dashboard/admin_dashboard_screen.dart';
+import 'package:http/http.dart' as http;
+import 'package:tsp/screens/driver/driver_document/documentVerification_Stage.dart';
+import 'package:tsp/screens/company/company_document/company_verification_stage.dart';
+import 'package:tsp/screens/company/company_document/company_upload_documents.dart';
 
 // We'll use a different approach to handle JS functionality
 
@@ -103,20 +113,201 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   // Method to handle navigation to role selection screen
-  void _navigateToRoleSelection() {
+  void _navigateToRoleSelection() async {
     // Prevent multiple navigations
     if (!mounted || _hasNavigated) return;
 
     _hasNavigated = true;
-    developer.log('Navigating to role selection screen');
+    developer.log('Checking for existing login session');
 
     // Cancel fallback timer
     _fallbackTimer?.cancel();
 
-    // Navigate to role selection screen
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => RoleSelectionScreen()),
-    );
+    // Check for existing login tokens
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    final driverId = prefs.getString('driverId');
+    final companyId = prefs.getString('companyId');
+    final adminId = prefs.getString('adminId');
+    final userType = prefs.getString('userType');
+
+    if (token != null && driverId != null) {
+      // Driver is logged in, check document verification status
+      developer.log('Found existing driver session, checking document status');
+      await _checkDriverDocumentStatus(driverId, token);
+    } else if (token != null && companyId != null) {
+      // Company is logged in, check document verification status
+      developer.log('Found existing company session, checking document status');
+      await _checkCompanyDocumentStatus(companyId, token);
+    } else if (token != null && adminId != null && userType == 'admin') {
+      // Admin is logged in
+      developer
+          .log('Found existing admin session, redirecting to admin dashboard');
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => AdminDashboardScreen()),
+      );
+    } else {
+      // No existing session, go to role selection
+      developer.log('No existing session found, navigating to role selection');
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => RoleSelectionScreen()),
+      );
+    }
+  }
+
+  // Check driver document verification status
+  Future<void> _checkDriverDocumentStatus(String driverId, String token) async {
+    try {
+      // First check if the driver has submitted documents
+      final docsSubmittedResponse = await http.get(
+        Uri.parse(
+            'http://3.110.135.112:5000/api/driver/has-submitted-documents/$driverId'),
+        headers: {"Content-Type": "application/json"},
+      );
+
+      final docsSubmittedData = json.decode(docsSubmittedResponse.body);
+      final bool hasSubmittedDocs = docsSubmittedData['hasSubmitted'] ?? false;
+
+      // If documents have not been submitted, route to document upload screen
+      if (!hasSubmittedDocs) {
+        developer.log(
+            'Driver has not submitted documents, redirecting to document upload screen');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => DriverVerificationScreen(driverId: driverId),
+          ),
+        );
+        return;
+      }
+
+      // If documents have been submitted, check verification status
+      final docStatusResponse = await http.get(
+        Uri.parse(
+            'http://3.110.135.112:5000/api/driver/document-status/$driverId'),
+        headers: {"Content-Type": "application/json"},
+      );
+
+      if (docStatusResponse.statusCode == 200) {
+        final docStatusData = json.decode(docStatusResponse.body);
+        final documents = docStatusData['documents'];
+
+        // Check if all documents are approved
+        final bool allApproved = documents['photoStatus'] == 'APPROVED' &&
+            documents['idCardStatus'] == 'APPROVED' &&
+            documents['drivingLicenseStatus'] == 'APPROVED' &&
+            documents['vehicleImageStatus'] == 'APPROVED' &&
+            documents['bankProofStatus'] == 'APPROVED';
+
+        if (allApproved) {
+          // All documents approved - navigate directly to driver dashboard
+          developer.log(
+              'All driver documents approved, redirecting to driver main screen');
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => DriverMainScreen()),
+          );
+        } else {
+          // Documents pending or rejected - show document status screen
+          developer.log(
+              'Some driver documents pending or rejected, redirecting to document status screen');
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => DocumentStatusScreen()),
+          );
+        }
+      } else {
+        // Error getting document status, default to document status screen
+        developer.log(
+            'Error getting driver document status, redirecting to document status screen');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => DocumentStatusScreen()),
+        );
+      }
+    } catch (e) {
+      // If any errors, navigate to document status screen as fallback
+      developer.log('Error checking driver document status: $e');
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => DocumentStatusScreen()),
+      );
+    }
+  }
+
+  // Check company document verification status
+  Future<void> _checkCompanyDocumentStatus(
+      String companyId, String token) async {
+    try {
+      // First check if the company has submitted documents
+      final docsSubmittedResponse = await http.get(
+        Uri.parse(
+            'http://3.110.135.112:5000/api/company-docs/has-submitted-documents/$companyId'),
+        headers: {"Content-Type": "application/json"},
+      );
+
+      final docsSubmittedData = json.decode(docsSubmittedResponse.body);
+      final bool hasSubmittedDocs = docsSubmittedData['hasSubmitted'] ?? false;
+
+      // If documents have not been submitted, route to document upload screen
+      if (!hasSubmittedDocs) {
+        developer.log(
+            'Company has not submitted documents, redirecting to document upload screen');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) =>
+                CompanyDocumentUploadScreen(companyId: companyId),
+          ),
+        );
+        return;
+      }
+
+      // If documents have been submitted, check verification status
+      final docStatusResponse = await http.get(
+        Uri.parse(
+            'http://3.110.135.112:5000/api/company-docs/document-status/$companyId'),
+        headers: {"Content-Type": "application/json"},
+      );
+
+      if (docStatusResponse.statusCode == 200) {
+        final docStatusData = json.decode(docStatusResponse.body);
+        final documents = docStatusData['documents'];
+
+        // Check if all documents are approved
+        final bool allApproved =
+            documents['companyRegistrationStatus'] == 'APPROVED' &&
+                documents['idCardStatus'] == 'APPROVED' &&
+                documents['gstNumberStatus'] == 'APPROVED';
+
+        if (allApproved) {
+          // All documents approved - navigate directly to company dashboard
+          developer.log(
+              'All company documents approved, redirecting to company main screen');
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const CompanyMainScreen()),
+          );
+        } else {
+          // Documents pending or rejected - show document status screen
+          developer.log(
+              'Some company documents pending or rejected, redirecting to document status screen');
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+                builder: (context) => CompanyDocumentStatusScreen()),
+          );
+        }
+      } else {
+        // Error getting document status, default to document status screen
+        developer.log(
+            'Error getting company document status, redirecting to document status screen');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+              builder: (context) => CompanyDocumentStatusScreen()),
+        );
+      }
+    } catch (e) {
+      // If any errors, navigate to document status screen as fallback
+      developer.log('Error checking company document status: $e');
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => CompanyDocumentStatusScreen(),
+        ),
+      );
+    }
   }
 
   // Method to handle skip button press
@@ -228,3 +419,7 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 }
+
+// No changes needed in this file since we've already initialized providers in main.dart
+// The initializeProviders function in main.dart will handle loading IDs from SharedPreferences
+// and updating the providers at app startup.

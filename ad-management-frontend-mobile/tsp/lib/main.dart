@@ -33,8 +33,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart' as provider;
 import 'providers/driver_profile_provider.dart';
 import 'providers/company_profile_provider.dart';
+import 'provider/providers.dart';
 
-void main() {
+void main() async {
+  // Ensure Flutter is initialized
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Create a ProviderContainer to initialize providers
+  final container = ProviderContainer();
+
+  // Initialize providers from SharedPreferences
+  await initializeProviders(container);
+
   runApp(
     provider.MultiProvider(
       providers: [
@@ -42,8 +52,9 @@ void main() {
         provider.ChangeNotifierProvider(
             create: (_) => CompanyProfileProvider()),
       ],
-      child: const ProviderScope(
-        child: MyApp(),
+      child: ProviderScope(
+        parent: container,
+        child: const MyApp(),
       ),
     ),
   );

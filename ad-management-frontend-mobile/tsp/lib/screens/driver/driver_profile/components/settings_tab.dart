@@ -11,6 +11,7 @@ import 'document_details_view.dart';
 import 'edit_profile_view.dart';
 
 import '../../about_company_dow/about_company_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SettingsTab extends StatefulWidget {
   const SettingsTab({Key? key}) : super(key: key);
@@ -265,7 +266,8 @@ class _SettingsTabState extends State<SettingsTab> {
                     builder: (BuildContext context) {
                       return AlertDialog(
                         title: const Text('Logout Confirmation'),
-                        content: const Text('Are you sure you want to log out?'),
+                        content:
+                            const Text('Are you sure you want to log out?'),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(),
@@ -274,9 +276,20 @@ class _SettingsTabState extends State<SettingsTab> {
                           TextButton(
                             onPressed: () {
                               Navigator.of(context).pop();
-                              // Use AuthService to logout
+                              // Use AuthService to logout with ProviderContainer
                               final authService = AuthService();
-                              authService.logout(context);
+                              try {
+                                // Get the ProviderContainer from the ProviderScope
+                                final container =
+                                    ProviderScope.containerOf(context);
+                                // Pass the container to the logout method
+                                authService.logout(context,
+                                    container: container);
+                              } catch (e) {
+                                print('Error during logout: $e');
+                                // Fallback logout if getting container fails
+                                authService.logout(context);
+                              }
                             },
                             style: TextButton.styleFrom(
                               foregroundColor: Colors.red,

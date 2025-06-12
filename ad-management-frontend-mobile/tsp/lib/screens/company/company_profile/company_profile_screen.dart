@@ -91,11 +91,19 @@ class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen>
 
   Future<void> _logout() async {
     try {
-      await _authService.logout(context);
+      // Get the ProviderContainer from the ProviderScope
+      final container = ProviderScope.containerOf(context);
+      // Pass the container to the logout method
+      await _authService.logout(context, container: container);
     } catch (e) {
       // If logout fails, manually navigate to role selection
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.remove("token");
+      // Also clear provider states
+      ref.read(companyIdProvider.notifier).state = null;
+      ref.read(driverIdProvider.notifier).state = null;
+      ref.read(rechargePlanIdProvider.notifier).state = null;
+
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => RoleSelectionScreen()),
         (route) => false,

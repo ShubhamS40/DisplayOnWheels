@@ -7,6 +7,8 @@ import 'dart:async';
 import '../../../utils/theme_constants.dart';
 import 'components/stat_card.dart';
 import 'components/pie_chart_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../screens/auth/role_selection.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({Key? key}) : super(key: key);
@@ -94,13 +96,39 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     ),
   ];
 
+  // Add this method for logout functionality
+  Future<void> _logout() async {
+    try {
+      // Clear admin token from SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('token');
+      await prefs.remove('adminId');
+      await prefs.remove('userType');
+
+      // Navigate to role selection screen
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => RoleSelectionScreen()),
+          (route) => false, // This removes all previous routes
+        );
+      }
+    } catch (e) {
+      print('Error during logout: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Logout failed. Please try again.')),
+        );
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
 
     // Simulate loading data
-    Future.delayed(Duration(seconds: 1), () {
+    Future.delayed(Duration(seconds: 2), () {
       if (mounted) {
         setState(() {
           isLoading = false;
@@ -108,9 +136,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       }
     });
 
-    // Set up a refresh timer (every 30 seconds)
-    _refreshTimer = Timer.periodic(Duration(seconds: 30), (timer) {
-      _refreshDashboardData();
+    // Set up periodic refresh
+    _refreshTimer = Timer.periodic(Duration(minutes: 5), (timer) {
+      if (mounted) {
+        setState(() {
+          // Refresh data here
+        });
+      }
     });
   }
 
@@ -121,102 +153,51 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     super.dispose();
   }
 
-  void _refreshDashboardData() {
-    // This would normally fetch fresh data from an API
-    setState(() {
-      isLoading = true;
-    });
-
-    Future.delayed(Duration(milliseconds: 800), () {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDarkMode ? Colors.white : ThemeConstants.textPrimary;
-
     return AuthProtectedScreen(
       child: Scaffold(
         appBar: AppBar(
-        backgroundColor: isDarkMode
-            ? ThemeConstants.darkBackground
-            : ThemeConstants.lightBackground,
-        elevation: 0,
-        title: Text(
-          'ADMIN DASHBOARD',
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh, color: ThemeConstants.primaryColor),
-            onPressed: _refreshDashboardData,
-          ),
-          IconButton(
-            icon: Icon(Icons.notifications_outlined,
-                color: ThemeConstants.primaryColor),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon:
-                Icon(Icons.person_outline, color: ThemeConstants.primaryColor),
-            onPressed: () {},
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: ThemeConstants.primaryColor,
-          unselectedLabelColor: textColor.withOpacity(0.5),
-          indicatorColor: ThemeConstants.primaryColor,
-          tabs: [
-            Tab(text: 'Overview'),
-            Tab(text: 'Analytics'),
-            Tab(text: 'Management'),
+          title: const Text('Admin Dashboard'),
+          backgroundColor: ThemeConstants.primaryColor,
+          actions: [
+            // Add logout button to app bar
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: _logout,
+              tooltip: 'Logout',
+            ),
           ],
         ),
-      ),
-      body: isLoading
-          ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+        body: isLoading
+            ? Center(child: CircularProgressIndicator())
+            : Column(
                 children: [
-                  CircularProgressIndicator(
-                    color: ThemeConstants.primaryColor,
+                  TabBar(
+                    controller: _tabController,
+                    labelColor: Theme.of(context).primaryColor,
+                    unselectedLabelColor: Colors.grey,
+                    tabs: [
+                      Tab(text: 'Overview'),
+                      Tab(text: 'Analytics'),
+                      Tab(text: 'Management'),
+                    ],
                   ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Loading dashboard data...',
-                    style: TextStyle(color: textColor.withOpacity(0.7)),
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        AdminOverviewScreen(statCards: statCards),
+                        AdminAnalyticsScreen(
+                          userDistributionData: userDistributionData,
+                          revenueDistributionData: revenueDistributionData,
+                        ),
+                        AdminManagementScreen(),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            )
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                // Overview Tab - Using modular component
-                AdminOverviewScreen(
-                  statCards: statCards,
-                ),
-
-                // Analytics Tab - Using modular component
-                AdminAnalyticsScreen(
-                  userDistributionData: userDistributionData,
-                  revenueDistributionData: revenueDistributionData,
-                ),
-
-                // Management Tab - Using modular component
-                AdminManagementScreen(),
-              ],
-            ),
       ),
     );
   }

@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../provider/providers.dart';
 import '../screens/auth/role_selection.dart';
 
 class AuthService {
@@ -22,7 +24,8 @@ class AuthService {
   }
 
   // Logout method to clear token and other stored data
-  Future<void> logout(BuildContext context) async {
+  Future<void> logout(BuildContext context,
+      {ProviderContainer? container}) async {
     try {
       // Clear stored tokens and user data
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -44,6 +47,18 @@ class AuthService {
       await prefs.remove("user_id");
       await prefs.remove("user_role");
       await prefs.remove("user_data");
+
+      // Clear driver and company IDs
+      await prefs.remove("driverId");
+      await prefs.remove("companyId");
+      await prefs.remove("rechargePlanId");
+
+      // Clear Riverpod providers if container is provided
+      if (container != null) {
+        container.read(driverIdProvider.notifier).state = null;
+        container.read(companyIdProvider.notifier).state = null;
+        container.read(rechargePlanIdProvider.notifier).state = null;
+      }
 
       // Navigate to role selection screen and clear navigation stack
       if (context.mounted) {
